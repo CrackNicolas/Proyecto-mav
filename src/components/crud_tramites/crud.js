@@ -8,6 +8,7 @@ export default function ComponentCrudTramites(){
 
     const ref_form = useRef(null);
     const [send_datos,setSend_datos] = useState(false);
+    const [active_style_description,setActive_style_description] = useState(false);
     const [list_icons_add,setList_icons_add] = useState([]);
     const {register, formState : { errors }, handleSubmit} = useForm();
 
@@ -47,15 +48,21 @@ export default function ComponentCrudTramites(){
         e.dataTransfer.setData("item_id",item + 1);
     }
     const dragging_over = (e) => {
+        setActive_style_description(true);
         e.preventDefault();
     }
     const on_drop = (e) => {
+        setActive_style_description(false);
         const item_id = e.dataTransfer.getData("item_id");
         if(item_id == "2" || item_id == "6"){
             if(!list_icons_add.includes(item_id)){
                 setList_icons_add((prev) => [...prev,item_id])
             }
         }
+    }
+    const remove_input = (e,icon) => {
+        e.preventDefault();
+        setList_icons_add(list_icons_add.filter(i => i != icon));
     }
     const icons = [
         {
@@ -96,21 +103,39 @@ export default function ComponentCrudTramites(){
         switch(icon){
             case "2": 
                 return <>
-                        <label htmlFor="input-legajo">{ message_inputs(errors.legajo,"Legajo") }</label>
-                        <input type="number" className={"mb-3 "+style_inputs(errors.legajo)} id="input-legajo" {...register('legajo',{
-                            required : true,
-                            min : 0,
-                            maxLength : 10
-                        })}/>
+                    <div className="d-flex justify-content-between">
+                        <label htmlFor="input-legajo">
+                            { message_inputs(errors.legajo,"Legajo") }
+                        </label>
+                        <button className="border-0 p-0 bg-transparent" onClick={(e) => remove_input(e,icon)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
+                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <input type="number" className={"mb-3 "+style_inputs(errors.legajo)} id="input-legajo" {...register('legajo',{
+                        required : true,
+                        min : 0,
+                        maxLength : 10
+                    })}/>
                 </>
             case "6": 
                 return <>
-                        <label htmlFor="input-clave-sysacad">{ message_inputs(errors.clave_sysacad,"Clave sysacad") }</label>
-                        <input type="password" className={"mb-3 "+style_inputs(errors.clave_sysacad)} id="input-clave-sysacad" {...register('clave_sysacad',{
-                            required : true,
-                            min : 0,
-                            maxLength : 110
-                        })}/>
+                    <div className="d-flex justify-content-between">
+                        <label className="d-flex justify-content-between" htmlFor="input-clave-sysacad">
+                            { message_inputs(errors.clave_sysacad,"Clave sysacad") }
+                        </label>
+                        <button className="border-0 p-0 bg-transparent" onClick={(e) => remove_input(e,icon)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
+                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <input type="password" className={"mb-3 "+style_inputs(errors.clave_sysacad)} id="input-clave-sysacad" {...register('clave_sysacad',{
+                        required : true,
+                        min : 0,
+                        maxLength : 110
+                    })}/>
                 </>
         }
     }
@@ -187,7 +212,7 @@ export default function ComponentCrudTramites(){
                         </div>
                         <div className="form-group mb-3">
                             <label htmlFor="input-description form-group">Descripcion</label>
-                            <div onDrop={(e) => on_drop(e)} droppable="true" onDragOver={(e) => dragging_over(e)} className="position-relative border border-primary rounded p-3" style={{height : (list_icons_add.length==0)? "200px" : "auto"}}>
+                            <div onDrop={(e) => on_drop(e)} droppable="true" onDragOver={(e) => dragging_over(e)} className={(active_style_description)? "position-relative border border-danger rounded p-3":"position-relative border border-primary rounded p-3"} style={{height : (list_icons_add.length==0)? "200px" : "auto"}}>
                                 { list_icons_add.length==0 && <div className="position-absolute w-100 text-center px-3 text-secondary" style={message_dragdrop()}>Arrastrar y soltar</div> }
                                 {
                                     list_icons_add.map((icon,index) => {
