@@ -2,6 +2,8 @@ import { useState, Fragment } from "react";
 import { useMediaQuery } from "react-responsive"
 import { useForm } from 'react-hook-form';
 
+//import axios from 'axios';
+
 export default function ComponentCrudTramites() {
     const isTablet = useMediaQuery({ query: '(max-width: 991px)' })
     const isMobile = useMediaQuery({ query: "(max-width: 675px)" });
@@ -17,15 +19,15 @@ export default function ComponentCrudTramites() {
     const { register, formState: { errors }, handleSubmit, clearErrors, reset } = useForm();
 
     const search_tramite = (e) => {
-        //Peticion http
+        //const result = await axios.get("");
         setList_tramites(list_tramites.filter((tramite, index) => index == e.target.value));
     }
     const delete_tramite = () => {
-        //Peticion http
+        //const result = await axios.delete("");
         setConfirmation_delete(undefined);
     }
     const edit_tramite = (data) => {
-        //Peticion http
+        //const result = await axios.put("");
         setConfirmation_edit(undefined);
         close_form();
         setSend_datos(true);
@@ -34,7 +36,7 @@ export default function ComponentCrudTramites() {
         setConfirmation_edit(null);
         close_form();
         setSend_datos(true);
-        //Peticion http
+        //const result = await axios.push("");
         setList_tramites((prev) => [...prev, data]);
     }
     const close_form = () => {
