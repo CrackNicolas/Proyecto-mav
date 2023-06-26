@@ -391,7 +391,7 @@ export default function ComponentCrudTramites() {
                                 </div>
                             </div>
                             <div className="form-group mb-3">
-                                <label htmlFor="input-description form-group">Descripcion</label>
+                                <label>Pagina</label>
                                 <div onDrop={(e) => on_drop(e)} droppable="true" onDragOver={(e) => dragging_over(e)} className={(active_style_description) ? "position-relative border border-danger rounded p-3" : "position-relative border border-primary rounded p-3"} style={{ height: (list_icons_add.length == 0) ? "200px" : "auto" }}>
                                     {list_icons_add.length == 0 && <div className="position-absolute w-100 text-center px-3 text-secondary" style={message_dragdrop()}>Arrastrar y soltar</div>}
                                     {
