@@ -11,6 +11,7 @@ export default function ComponentCrudTramites() {
     const [active_style_description, setActive_style_description] = useState(false);
     const [confirmation_edit, setConfirmation_edit] = useState(null);
     const [confirmation_delete, setConfirmation_delete] = useState(null);
+    const [view_password,setView_password] = useState(false);
     const [list_icons_add, setList_icons_add] = useState([]);
     const [list_tramites, setList_tramites] = useState([]);
     const { register, formState: { errors }, handleSubmit, clearErrors, reset } = useForm();
@@ -195,11 +196,15 @@ export default function ComponentCrudTramites() {
                             </svg>
                         </button>
                     </div>
-                    <input type="password" className={"mb-3 " + style_inputs(errors.clave_sysacad)} id="input-clave-sysacad" {...register('clave_sysacad', {
+                    <input type={(view_password)? "text" : "password"} className={"mb-3 " + style_inputs(errors.clave_sysacad)} id="input-clave-sysacad" {...register('clave_sysacad', {
                         required: true,
                         min: 0,
                         maxLength: 110
                     })} />
+                    <div style={{display:"flex",alignItems:"center",marginTop:"-12px",marginLeft:"2px"}}>
+                        <input id="view-password" type="checkbox" onClick={() => setView_password(!view_password)} style={{height:"16px",width:"16px"}}/>
+                        <label className="ml-2 mt-2" for="view-password">Mostrar contraseña</label>
+                    </div>
                 </>
         }
     }
