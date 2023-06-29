@@ -13,24 +13,45 @@ export default function ComponentCrudTramites() {
     const [active_style_description, setActive_style_description] = useState(false);
     const [confirmation_edit, setConfirmation_edit] = useState(null);
     const [confirmation_delete, setConfirmation_delete] = useState(null);
+    const [confirmation_search,setConfirmation_search] = useState(true);
     const [view_password,setView_password] = useState(false);
     const [list_icons_add, setList_icons_add] = useState([]);
     const [list_tramites, setList_tramites] = useState([]);
     const { register, formState: { errors }, handleSubmit, clearErrors, reset } = useForm();
 
     const search_tramite = (e) => {
-        //const result = await axios.get("");
+        setConfirmation_delete(null);
+        setConfirmation_edit(null);
+        setSend_datos(false);
+        if(e.target.value===""){
+            setConfirmation_search(true);
+            //const result = await axios.get("url"); //Obtener todos los tramites
+            //setList_tramites(result);
+        }else{
+            if(!(/^([ a-zA-Záéíóú1-9]{1,60})(\s[a-zA-Z]+)*$/i).test(e.target.value)){
+                setConfirmation_search(undefined);
+                //setList_tramites([]); //Limpiar
+            }else{
+                //const result = await axios.get("url",e.target.value); //Buscar el tramite
+                //setList_tramites(result);
+                setConfirmation_search(false);
+            }
+        }
         setList_tramites(list_tramites.filter((tramite, index) => index == e.target.value));
     }
     const delete_tramite = () => {
         //const result = await axios.delete("");
         setConfirmation_delete(undefined);
+        //const result = await axios.get(""); //Actualizar tramites
+        //setList_tramites(result);
     }
     const edit_tramite = (data) => {
         //const result = await axios.put("");
         setConfirmation_edit(undefined);
         close_form();
         setSend_datos(true);
+        //const result = await axios.get(""); //Actualizar tramites
+        //setList_tramites(result);
     }
     const push_tramite = (data) => {
         setConfirmation_edit(null);
@@ -38,6 +59,8 @@ export default function ComponentCrudTramites() {
         setSend_datos(true);
         //const result = await axios.push("");
         setList_tramites((prev) => [...prev, data]);
+        //const result = await axios.get(""); //Actualizar tramites
+        //setList_tramites(result);
     }
     const close_form = () => {
         reset_form();
@@ -237,13 +260,18 @@ export default function ComponentCrudTramites() {
                         </div>
                     </article>
                 }
+                {(!confirmation_search || confirmation_search===undefined) &&
+                    <article className="mt-2 mb-1 border border-danger pt-3 pr-3 rounded d-flex justify-content-between">
+                        <p className="pl-3 text-danger font-weight-bold">
+                            {(confirmation_search!==undefined)? "No se encontraron resultados para su busqueda...":"Solo se permiten letras y numeros positivos con un maximo de 60 caracteres..."}
+                        </p>
+                        <div>😕</div>
+                    </article>
+                }
                 {(confirmation_delete === undefined) &&
                     <article className="mt-2 mb-1 border border-success pt-3 pr-3 rounded d-flex justify-content-between">
                         <p className="pl-3 text-success font-weight-bold">Tramite {confirmation_delete} eliminado con exito...</p>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-check-circle text-success" viewBox="0 0 16 16">
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                            <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z" />
-                        </svg>
+                        <div>😃</div>
                     </article>
                 }
                 {(send_datos) &&
@@ -251,10 +279,7 @@ export default function ComponentCrudTramites() {
                         <p className="pl-3 text-success font-weight-bold">
                             {(confirmation_edit===undefined)? "Tramite actualizado con exito..." : "Tramite creado con exito..."}
                         </p>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-check-circle text-success" viewBox="0 0 16 16">
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                            <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z" />
-                        </svg>
+                        <div>😁</div>
                     </article>
                 }
                 <article className="table-responsive">
