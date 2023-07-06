@@ -1,6 +1,43 @@
+/**
+{
+"descripcion":{
+"titulo": "ejemplo2",
+      "proyecto": 99,
+      "indicador": 888,
+ "agente":98,
+      "dias": 2,
+      "page": {
+"Fecha de Incidente":"09/09/2023",
+"Comentario": "tjsjajsj",
+"Cantiadades": 98,
+"Legajo": 0,
+"Clave de acceso": "password",
+"Tipo de Estudiante": ["Ingresante", "Libre", "Regular", "graduado"],
+"Completo Secundario": true,
+"Materias": {"Nombre":"", "Comision":"", "Cuatrimestre":""}
+},
+      "aux": ""
+
+} ,
+ "categoria_id_categoria": 3,
+      "tipo_usuario_tipo": 1,
+      "especialidad_id_especialidad": 5
+} 
+ **/
+
+// "tabla": {titulo:"",categoria:""}
+
+
+/*
+    Nombre  Comision  Cuatrimetre
+    arq       1k7        2do
+    dis       1k8        1do
+*/
+
 import { useState, Fragment } from "react";
 import { useMediaQuery } from "react-responsive"
 import { useForm } from 'react-hook-form';
+import { useReducer } from "react";
 
 //import axios from 'axios';
 
@@ -10,28 +47,35 @@ export default function ComponentCrudTramites() {
 
     const [send_datos, setSend_datos] = useState(false);
     const [view_modal_form, setView_modal_form] = useState(false);
+    const [view_modal_page, setView_modal_page] = useState(false);
     const [active_style_description, setActive_style_description] = useState(false);
     const [confirmation_edit, setConfirmation_edit] = useState(null);
     const [confirmation_delete, setConfirmation_delete] = useState(null);
-    const [confirmation_search,setConfirmation_search] = useState(true);
-    const [view_password,setView_password] = useState(false);
+    const [confirmation_search, setConfirmation_search] = useState(true);
+    const [capture_icon_setting, setCapture_icon_setting] = useState({});
+    const [capture_name_setting, setCapture_name_setting] = useState("");
+    const [capture_option_setting, setCapture_option_setting] = useState("");
+    const [capture_options_setting, setCapture_options_setting] = useState([]);
+    const [capture_rows_setting, setCapture_rows_setting] = useState([1]);
     const [list_icons_add, setList_icons_add] = useState([]);
     const [list_tramites, setList_tramites] = useState([]);
     const { register, formState: { errors }, handleSubmit, clearErrors, reset } = useForm();
+
+    const [any, forceUpdate] = useReducer(prev => prev + 1, 0);
 
     const search_tramite = (e) => {
         setConfirmation_delete(null);
         setConfirmation_edit(null);
         setSend_datos(false);
-        if(e.target.value===""){
+        if (e.target.value === "") {
             setConfirmation_search(true);
             //const result = await axios.get("url"); //Obtener todos los tramites
             //setList_tramites(result);
-        }else{
-            if(!(/^([ a-zA-Záéíóú1-9]{1,60})(\s[a-zA-Z]+)*$/i).test(e.target.value)){
+        } else {
+            if (!(/^([ a-zA-Záéíóú1-9]{1,60})(\s[a-zA-Z]+)*$/i).test(e.target.value)) {
                 setConfirmation_search(undefined);
                 //setList_tramites([]); //Limpiar
-            }else{
+            } else {
                 //const result = await axios.get("url",e.target.value); //Buscar el tramite
                 //setList_tramites(result);
                 setConfirmation_search(false);
@@ -91,7 +135,7 @@ export default function ComponentCrudTramites() {
             user_type: list_tramites[index]?.user_type,
             specialty: list_tramites[index]?.specialty
         })
-        setList_icons_add(["2","6"]);
+        setList_icons_add(["2", "6"]);
         setConfirmation_edit(index);
         setView_modal_form(true);
     }
@@ -118,15 +162,16 @@ export default function ComponentCrudTramites() {
         }
     }
     const style_inputs = (input) => {
-        return (input?.type === "required" || input?.type === "maxLength" || input?.type === "min" || input?.type === "pattern") ? "form-control shadow-none border-danger" : "form-control shadow-none border-primary";
+        return (input?.type === "required" || input?.type === "maxLength" || input?.type === "minLength" || input?.type === "min" || input?.type === "pattern") ? "form-control shadow-none border-danger" : "form-control shadow-none border-primary";
     }
     const message_inputs = (input, name) => {
-        return <span style={(input?.type !== "required" && input?.type !== "maxLength" && input?.type !== "min" && input?.type !== "pattern") ? {} : { color: "red" }}>
+        return <span style={(input?.type !== "required" && input?.type !== "maxLength" && input?.type !== "minLength" && input?.type !== "min" && input?.type !== "pattern") ? {} : { color: "red" }}>
             {
                 (input?.type === "required") ? (name === "Dias") ? "Los dias son requeridos" : (name === "Clave sysacad") ? "La clave sysacad es requerida" : "El " + name.toLowerCase() + " es requerido" :
                     (input?.type === "min") ? (name === "Dias") ? "Los dias deben tener un minimo de 0" : "El " + name.toLowerCase() + " debe tener un minimo 0" :
-                        (input?.type === "pattern") ? "El " + name.toLowerCase() + " solo permite letras" :
-                            (input?.type === "maxLength") ? (name === "Clave sysacad") ? "La clave sysacad debe tener menos de 110 caracteres" : "El " + name.toLowerCase() + " debe tener menos de 10 caracteres" : name
+                        (input?.type === "pattern") ? (name === "Auxiliar") ? "La url no es valida" : "El " + name.toLowerCase() + " solo permite letras" :
+                            (input?.type === "maxLength") ? "El " + name.toLowerCase() + " debe tener menos de 140 caracteres" :
+                                (input?.type === "minLength") ? "El " + name.toLowerCase() + " debe tener un minimo de 5 caracteres" : name
             }
         </span>
     }
@@ -145,16 +190,242 @@ export default function ComponentCrudTramites() {
         e.preventDefault();
     }
     const on_drop = (e) => {
+        setView_modal_page(true);
+        reset_setting();
         setActive_style_description(false);
-        const item_id = e.dataTransfer.getData("item_id");
-        if(!list_icons_add.includes(item_id)){
-            setList_icons_add((prev) => [...prev, item_id])
+        const id = e.dataTransfer.getData("item_id");
+        setCapture_icon_setting({ id });
+    }
+    const remove_input = (name) => {
+        setList_icons_add(list_icons_add.filter(icon => icon.name != name));
+    }
+    const remove_icon = () => {
+        setView_modal_page(false);
+        reset_setting();
+    }
+    const reset_setting = () => {
+        setCapture_name_setting("");
+        setCapture_option_setting("");
+        setCapture_options_setting([]);
+        setCapture_icon_setting({});
+    }
+    const add_icon = () => {
+        setView_modal_page(false);
+        if (list_icons_add.find(icon => icon.name === capture_name_setting) === undefined) {
+            setList_icons_add((prev) => [...prev, {
+                id: capture_icon_setting.id,
+                name: capture_name_setting,
+                options: capture_options_setting,
+                table: [get_column_table()]
+            }]);
         }
     }
-    const remove_input = (e, icon) => {
-        e.preventDefault();
-        setList_icons_add(list_icons_add.filter(i => i != icon));
+    const add_option = () => {
+        if (!capture_options_setting.includes(capture_option_setting)) {
+            setCapture_options_setting((prev) => [...prev, capture_option_setting]);
+        }
+        setCapture_option_setting("");
     }
+    const remove_option = (option) => {
+        setCapture_options_setting(capture_options_setting.filter(prev => prev != option));
+    }
+    const get_column_table = () => {
+        let column = {};
+        capture_options_setting.map((option) => column[option] = "");
+        return column;
+    }
+    const rows_table = (key, index, action) => {
+        let list = list_icons_add;
+        if (action === "+") {
+            list[key].table.push(get_column_table());
+            setList_icons_add(list);
+        }
+        if (action === "-") {
+            if(list[key].table.length == 1){
+                setList_icons_add(list_icons_add.filter(prev => prev != list_icons_add[key]));
+            }else{
+                list[key].table = list[key].table.filter(row => row !== list[key].table[index]);
+                setList_icons_add(list);
+            }
+        }
+        forceUpdate();
+    }
+    const capture_value_table = (row,key,e) => {
+        row[key] = e.target.value
+        forceUpdate();
+    }
+    const search_setting = (icon) => {
+        switch (icon.id) {
+            case "3":
+                return <>
+                    <div className="pt-3">
+                        <span className="text-primary font-weight-bold">Calumnas</span>
+                        <div className="d-flex my-2">
+                            <input type="text" value={capture_option_setting} className="form-control shadow-none border-primary" onChange={(e) => setCapture_option_setting(e.target.value)} placeholder="Columna..." />
+                            <button onClick={() => add_option()} type="button" className="ml-1 btn btn-primary border-0 pt-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="col border border-primary py-2 px-2">
+                            <p className="text-primary font-weight-bold">Tabla</p>
+                            {(capture_options_setting.length != 0) &&
+                                <table className="table table-bordered table-hover">
+                                    <thead className="thead text-white" style={{ backgroundColor: "black" }}>
+                                        <tr>
+                                            {
+                                                capture_options_setting.map((column, index) => {
+                                                    return <th key={index} scope="col" className="py-1">
+                                                        <div className="d-flex justify-content-between">
+                                                            <span>{column}</span>
+                                                            <button className="border-0 p-0 bg-transparent" type="button" onClick={() => remove_option(column)}>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
+                                                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </th>
+                                                })
+                                            }
+                                        </tr>
+                                    </thead>
+                                </table>
+                            }
+                        </div>
+                    </div>
+                </>
+            case "7":
+                return <>
+                    <div className="pt-3">
+                        <span className="text-primary font-weight-bold">Opciones</span>
+                        <div className="d-flex my-2">
+                            <input type="text" value={capture_option_setting} className="form-control shadow-none border-primary" onChange={(e) => setCapture_option_setting(e.target.value)} placeholder="Opcion..." />
+                            <button onClick={() => add_option()} type="button" className="ml-1 btn btn-primary border-0 pt-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="col border border-primary py-2 px-2">
+                            <p className="text-primary font-weight-bold">Lista de opciones</p>
+                            {
+                                capture_options_setting.map((option, index) => {
+                                    return <p key={index} className="d-flex justify-content-between border border-primary rounded">
+                                        <span className="px-2 py-1">{option}</span>
+                                        <button className="border-0 p-0 bg-transparent mr-1" type="button" onClick={() => remove_option(option)}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
+                                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                                            </svg>
+                                        </button>
+                                    </p>
+                                })
+                            }
+                        </div>
+                    </div>
+                </>
+        }
+    }
+    const search_icon = (icon, key) => {
+        switch (icon.id) {
+            case "1": case "2": case "4": case "6":
+                return <>
+                    <div className="d-flex justify-content-between">
+                        <label htmlFor={"input-" + icon.name}>
+                            {icon.name}
+                        </label>
+                        <button className="border-0 p-0 bg-transparent" type="button" onClick={() => remove_input(icon.name)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
+                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <input type={(icon.id === "1") ? "text" : (icon.id === "2" ? "number" : (icon.id === "4") ? "date" : "password")} className="form-control shadow-none border-primary" id={"input-" + icon.name} placeholder={icon.name + "..."} />
+                </>
+            case "3":
+                return <>
+                    <div className="d-flex justify-content-between">
+                        <label htmlFor={"input-" + icon.name}>
+                            {icon.name}
+                        </label>
+                        <button className="border-0 p-0 bg-transparent" type="button" onClick={() => remove_input(icon.name)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
+                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <table className="table table-bordered table-hover">
+                        <thead className="thead text-white" style={{ backgroundColor: "black" }}>
+                            <tr>
+                                {
+                                    Object.keys(icon.table[0]).map(key => {
+                                        return <th key={key} className="py-1">{key}</th>
+                                    })
+                                }
+                                <th className="py-1 text-center">
+                                    <svg onClick={() => rows_table(key, 0, "+")} xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-plus-circle-fill text-primary" style={{ cursor: "pointer" }} viewBox="0 0 16 16">
+                                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z" />
+                                    </svg>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {
+                                icon.table.map((row, id) => {
+                                    return <tr key={id}>
+                                        {
+                                            Object.keys(row).map((key, index) => {
+                                                return <td key={index} className="text-center">
+                                                    <input type="text" value={row[key]} onChange={(e) => capture_value_table(row,key,e)} className="form-control shadow-none border-primary" placeholder={key + "..."} />
+                                                </td>
+                                            })
+                                        }
+                                        <td className="text-center pt-3">
+                                            <svg onClick={() => rows_table(key, id, "-")} xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-x-circle-fill text-danger ml-1" style={{ cursor: "pointer" }} viewBox="0 0 16 16">
+                                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z" />
+                                            </svg>
+                                        </td>
+                                    </tr>
+                                })
+                            }
+                        </tbody>
+                    </table>
+                </>
+            case "5": case "7":
+                return <>
+                    <div className="d-flex justify-content-between">
+                        <label htmlFor={"input-" + icon.name}>
+                            {(icon.id === "5") ? "¿" + icon.name + "?" : icon.name}
+                        </label>
+                        <button className="border-0 p-0 bg-transparent" type="button" onClick={() => remove_input(icon.name)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
+                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                            </svg>
+                        </button>
+                    </div>
+                    {
+                        (icon.id === "5") &&
+                        <select className="form-control shadow-none border-primary">
+                            <option value="">Seleccionar respuesta...</option>
+                            <option value={true}>Si</option>
+                            <option value={false}>No</option>
+                        </select>
+                    }
+                    {
+                        (icon.id === "7") &&
+                        <select className="form-control shadow-none border-primary">
+                            <option value="">Seleccionar {icon.name.toLowerCase()}...</option>
+                            {
+                                icon.options.map((option, index) => {
+                                    return <option key={index} value={option}>{option}</option>
+                                })
+                            }
+                        </select>
+                    }
+                </>
+        }
+    }
+
     const icons = [
         {
             name: "Text",
@@ -183,56 +454,8 @@ export default function ComponentCrudTramites() {
         {
             name: "Select",
             icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-card-checklist" viewBox="0 0 16 16"><path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z" /><path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0zM7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z" /></svg>
-        },
-        {
-            name: "Check",
-            icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-check2-square" viewBox="0 0 16 16"><path d="M3 14.5A1.5 1.5 0 0 1 1.5 13V3A1.5 1.5 0 0 1 3 1.5h8a.5.5 0 0 1 0 1H3a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5V8a.5.5 0 0 1 1 0v5a1.5 1.5 0 0 1-1.5 1.5H3z" /><path d="m8.354 10.354 7-7a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0z" /></svg>
         }
     ]
-    const add_icons = (icon) => {
-        switch (icon) {
-            case "2":
-                return <>
-                    <div className="d-flex justify-content-between">
-                        <label htmlFor="input-legajo">
-                            {message_inputs(errors.legajo, "Legajo")}
-                        </label>
-                        <button className="border-0 p-0 bg-transparent" onClick={(e) => remove_input(e, icon)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
-                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
-                            </svg>
-                        </button>
-                    </div>
-                    <input type="number" className={"mb-3 " + style_inputs(errors.legajo)} id="input-legajo" {...register('legajo', {
-                        required: true,
-                        min: 0,
-                        maxLength: 10
-                    })} />
-                </>
-            case "6":
-                return <>
-                    <div className="d-flex justify-content-between">
-                        <label className="d-flex justify-content-between" htmlFor="input-clave-sysacad">
-                            {message_inputs(errors.clave_sysacad, "Clave sysacad")}
-                        </label>
-                        <button className="border-0 p-0 bg-transparent" onClick={(e) => remove_input(e, icon)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
-                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
-                            </svg>
-                        </button>
-                    </div>
-                    <input type={(view_password)? "text" : "password"} className={"mb-3 " + style_inputs(errors.clave_sysacad)} id="input-clave-sysacad" {...register('clave_sysacad', {
-                        required: true,
-                        min: 0,
-                        maxLength: 110
-                    })} />
-                    <div style={{display:"flex",alignItems:"center",marginTop:"-12px",marginLeft:"2px"}}>
-                        <input id="view-password" type="checkbox" onClick={() => setView_password(!view_password)} style={{height:"16px",width:"16px"}}/>
-                        <label className="ml-2 mt-2" for="view-password">Mostrar contraseña</label>
-                    </div>
-                </>
-        }
-    }
 
     return (
         <Fragment>
@@ -260,10 +483,10 @@ export default function ComponentCrudTramites() {
                         </div>
                     </article>
                 }
-                {(!confirmation_search || confirmation_search===undefined) &&
+                {(!confirmation_search || confirmation_search === undefined) &&
                     <article className="mt-2 mb-1 border border-danger pt-3 pr-3 rounded d-flex justify-content-between">
                         <p className="pl-3 text-danger font-weight-bold">
-                            {(confirmation_search!==undefined)? "No se encontraron resultados para su busqueda...":"Solo se permiten letras y numeros positivos con un maximo de 60 caracteres..."}
+                            {(confirmation_search !== undefined) ? "No se encontraron resultados para su busqueda..." : "Solo se permiten letras y numeros positivos con un maximo de 60 caracteres..."}
                         </p>
                         <div>😕</div>
                     </article>
@@ -277,7 +500,7 @@ export default function ComponentCrudTramites() {
                 {(send_datos) &&
                     <article className="mt-2 mb-1 border border-success pt-3 pr-3 rounded d-flex justify-content-between">
                         <p className="pl-3 text-success font-weight-bold">
-                            {(confirmation_edit===undefined)? "Tramite actualizado con exito..." : "Tramite creado con exito..."}
+                            {(confirmation_edit === undefined) ? "Tramite actualizado con exito..." : "Tramite creado con exito..."}
                         </p>
                         <div>😁</div>
                     </article>
@@ -286,18 +509,8 @@ export default function ComponentCrudTramites() {
                     <table className="table table-bordered table-hover">
                         <thead className="thead text-white" style={{ backgroundColor: "black" }}>
                             <tr>
-                                <th className="text-center" scope="col">ID</th>
                                 <th className="text-center" scope="col">Titulo</th>
-                                <th className="text-center" scope="col">Proyecto</th>
-                                <th className="text-center" scope="col">Indicador</th>
-                                <th className="text-center" scope="col">Agente</th>
-                                <th className="text-center" scope="col">Dias</th>
-                                <th className="text-center" scope="col">Legajo</th>
-                                <th className="text-center" scope="col">Clave&nbsp;sysacad</th>
-                                <th className="text-center" scope="col">Aux</th>
                                 <th className="text-center" scope="col">Categoria</th>
-                                <th className="text-center" scope="col">Tipo&nbsp;usuario</th>
-                                <th className="text-center" scope="col">Especialidad</th>
                                 <th className="text-center" scope="col" style={{ color: "black" }}>xxxxxx</th>
                             </tr>
                         </thead>
@@ -306,18 +519,8 @@ export default function ComponentCrudTramites() {
                                 list_tramites.map((tramite, index) => {
                                     return (
                                         <tr key={index}>
-                                            <th className="text-center">{index}</th>
                                             <td className="text-center">{tramite.title}</td>
-                                            <td className="text-center">{tramite.project}</td>
-                                            <td className="text-center">{tramite.indicator}</td>
-                                            <td className="text-center">{tramite.agent}</td>
-                                            <td className="text-center">{tramite.days}</td>
-                                            <td className="text-center">{tramite.legajo}</td>
-                                            <td className="text-center">{tramite.clave_sysacad}</td>
-                                            <td className="text-center">{tramite.aux}</td>
                                             <td className="text-center">{tramite.category}</td>
-                                            <td className="text-center">{tramite.user_type}</td>
-                                            <td className="text-center">{tramite.specialty}</td>
                                             <td className="px-0 text-center">
                                                 <button onClick={() => edit_form(index)} className="border-0 pb-1 rounded bg-primary mx-1">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-pencil text-white" viewBox="0 0 16 16">
@@ -352,14 +555,15 @@ export default function ComponentCrudTramites() {
                 </section>
                 <section className="row py-3 d-flex">
                     <article className={(isTablet) ? "col-12 order-2 mt-3" : "col-10"}>
-                        <form method="POST" action="" onSubmit={handleSubmit((confirmation_edit==null)? push_tramite : edit_tramite)}>
+                        <form method="POST" action="" onSubmit={handleSubmit((confirmation_edit == null) ? push_tramite : edit_tramite)}>
                             <div className="form-group">
                                 <label htmlFor="input-title">
                                     {message_inputs(errors.title, "Titulo")}
                                 </label>
                                 <input type="text" className={style_inputs(errors.title)} id="input-title" {...register('title', {
                                     required: true,
-                                    maxLength: 20,
+                                    minLength: 5,
+                                    maxLength: 140,
                                     pattern: /^([a-zA-Záéíóú]+)(\s[a-zA-Z]+)*$/i
                                 })} />
                             </div>
@@ -369,8 +573,7 @@ export default function ComponentCrudTramites() {
                                 </label>
                                 <input type="number" className={style_inputs(errors.project)} id="input-project" {...register('project', {
                                     required: true,
-                                    min: 0,
-                                    maxLength: 10
+                                    min: 0
                                 })} />
                             </div>
                             <div className="row">
@@ -380,8 +583,7 @@ export default function ComponentCrudTramites() {
                                     </label>
                                     <input type="number" className={style_inputs(errors.indicator)} id="input-indicator" {...register('indicator', {
                                         required: true,
-                                        min: 0,
-                                        maxLength: 10
+                                        min: 0
                                     })} />
                                 </div>
                                 <div className="col form-group">
@@ -390,8 +592,7 @@ export default function ComponentCrudTramites() {
                                     </label>
                                     <input type="number" className={style_inputs(errors.agent)} id="input-agent" {...register('agent', {
                                         required: true,
-                                        min: 0,
-                                        maxLength: 10
+                                        min: 0
                                     })} />
                                 </div>
                             </div>
@@ -402,8 +603,7 @@ export default function ComponentCrudTramites() {
                                     </label>
                                     <input type="number" className={style_inputs(errors.days)} id="input-days" {...register('days', {
                                         required: true,
-                                        min: 0,
-                                        maxLength: 10
+                                        min: 0
                                     })} />
                                 </div>
                                 <div className="col form-group">
@@ -411,17 +611,43 @@ export default function ComponentCrudTramites() {
                                         {message_inputs(errors.aux, "Auxiliar")}
                                     </label>
                                     <input type="text" className={style_inputs(errors.aux)} id="input-aux" {...register('aux', {
-                                        required: true
+                                        pattern: /https?:\/\/[\w\-\.]+\.\w{2,5}\/?\$*/i
                                     })} />
                                 </div>
                             </div>
                             <div className="form-group mb-3">
                                 <label>Pagina</label>
-                                <div onDrop={(e) => on_drop(e)} droppable="true" onDragOver={(e) => dragging_over(e)} className={(active_style_description) ? "position-relative border border-danger rounded p-3" : "position-relative border border-primary rounded p-3"} style={{ height: (list_icons_add.length == 0) ? "200px" : "auto" }}>
-                                    {list_icons_add.length == 0 && <div className="position-absolute w-100 text-center px-3 text-secondary" style={message_dragdrop()}>Arrastrar y soltar</div>}
+                                <div onDrop={(e) => on_drop(e)} droppable="true" onDragOver={(e) => dragging_over(e)} className={(active_style_description) ? "position-relative border border-danger rounded p-3" : "position-relative border border-primary rounded p-3"} style={{ height: (list_icons_add.length == 0 && !view_modal_page) ? "200px" : "auto" }}>
+                                    {
+                                        view_modal_page &&
+                                        <div className="border border-primary rounded p-2 w-100 text-center mb-3">
+                                            <span className="text-primary font-weight-bold">Configuracion</span>
+                                            <div className="py-3">
+                                                <input type="text" className="form-control shadow-none border-primary" onChange={(e) => setCapture_name_setting(e.target.value)} value={capture_name_setting} placeholder="Nombre..." />
+                                                {search_setting(capture_icon_setting)}
+                                            </div>
+                                            <div className="d-flex justify-content-between">
+                                                <button onClick={() => remove_icon()} type="button" className="btn btn-danger rounded d-flex align-items-center px-2 py-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-circle" viewBox="0 0 16 16">
+                                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                                                    </svg>
+                                                    <span className="ml-1 font-weight-bold">Deshacer</span>
+                                                </button>
+                                                <button onClick={() => add_icon()} type="button" className="btn btn-primary rounded d-flex align-items-center px-4 py-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-check-circle" viewBox="0 0 16 16">
+                                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                                                        <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z" />
+                                                    </svg>
+                                                    <span className="ml-1 font-weight-bold">Listo</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                    {(!view_modal_page && list_icons_add.length == 0) && <div className="w-100 text-center text-secondary" style={message_dragdrop()}>Arrastrar y soltar</div>}
                                     {
                                         list_icons_add.map((icon, index) => {
-                                            return <div key={index}>{add_icons(icon)}</div>
+                                            return <div key={index} className="mb-3">{search_icon(icon, index)}</div>
                                         })
                                     }
                                 </div>
