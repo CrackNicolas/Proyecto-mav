@@ -76,7 +76,7 @@ export default function ComponentCrudTramites() {
         
         list_icons_add.map(element => {
             if(element.table.length!=0){
-                let schema_table = [], schema_all_table = [];
+                let schema_table = [];
                 element.table.map(row => {
                     let schema = {};
                     Object.keys(row).map((prop,key) => {
@@ -243,7 +243,7 @@ export default function ComponentCrudTramites() {
     const remove_option = (option) => {
         setCapture_options_setting(capture_options_setting.filter(prev => prev != option));
     }
-    const get_column_table = () => {
+    const get_column_table = (key) => {
         let column = {};
         capture_options_setting.map((option) => {
             column[option.name] = {
@@ -253,10 +253,20 @@ export default function ComponentCrudTramites() {
         });
         return column;
     }
+    const get_setting_column_table = (key) => {
+        let column = {};
+        Object.keys(list_icons_add[key].table[0]).map((prop,index) => {
+            column[prop] = {
+                value: "",
+                type: Object.values(list_icons_add[key].table[0])[index]?.type
+            }
+        });
+        return column;
+    }
     const rows_table = (key, index, action) => {
         let list = list_icons_add;
         if (action === "+") {
-            list[key].table.push(get_column_table());
+            list[key].table.push(get_setting_column_table(key));
             setList_icons_add(list);
         }
         if (action === "-") {
