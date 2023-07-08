@@ -1,43 +1,6 @@
-/**
-{
-"descripcion":{
-"titulo": "ejemplo2",
-      "proyecto": 99,
-      "indicador": 888,
- "agente":98,
-      "dias": 2,
-      "page": {
-"Fecha de Incidente":"09/09/2023",
-"Comentario": "tjsjajsj",
-"Cantiadades": 98,
-"Legajo": 0,
-"Clave de acceso": "password",
-"Tipo de Estudiante": ["Ingresante", "Libre", "Regular", "graduado"],
-"Completo Secundario": true,
-"Materias": {"Nombre":"", "Comision":"", "Cuatrimestre":""}
-},
-      "aux": ""
-
-} ,
- "categoria_id_categoria": 3,
-      "tipo_usuario_tipo": 1,
-      "especialidad_id_especialidad": 5
-} 
- **/
-
-// "tabla": {titulo:"",categoria:""}
-
-
-/*
-    Nombre  Comision  Cuatrimetre
-    arq       1k7        2do
-    dis       1k8        1do
-*/
-
-import { useState, Fragment } from "react";
+import { useState, Fragment, useReducer } from "react";
 import { useMediaQuery } from "react-responsive"
 import { useForm } from 'react-hook-form';
-import { useReducer } from "react";
 
 //import axios from 'axios';
 
@@ -54,9 +17,9 @@ export default function ComponentCrudTramites() {
     const [confirmation_search, setConfirmation_search] = useState(true);
     const [capture_icon_setting, setCapture_icon_setting] = useState({});
     const [capture_name_setting, setCapture_name_setting] = useState("");
+    const [capture_type_setting, setCapture_type_setting] = useState("");
     const [capture_option_setting, setCapture_option_setting] = useState("");
     const [capture_options_setting, setCapture_options_setting] = useState([]);
-    const [capture_rows_setting, setCapture_rows_setting] = useState([1]);
     const [list_icons_add, setList_icons_add] = useState([]);
     const [list_tramites, setList_tramites] = useState([]);
     const { register, formState: { errors }, handleSubmit, clearErrors, reset } = useForm();
@@ -98,13 +61,53 @@ export default function ComponentCrudTramites() {
         //setList_tramites(result);
     }
     const push_tramite = (data) => {
+        let data_setting = setting_data_tramite(data);
+
         setConfirmation_edit(null);
         close_form();
         setSend_datos(true);
         //const result = await axios.push("");
-        setList_tramites((prev) => [...prev, data]);
+        setList_tramites((prev) => [...prev, data_setting]);
         //const result = await axios.get(""); //Actualizar tramites
         //setList_tramites(result);
+    }
+    const setting_data_tramite = (data) => {
+        let setting_data = {}, setting_page = {};
+        
+        list_icons_add.map(element => {
+            if(element.table.length!=0){
+                let schema_table = [], schema_all_table = [];
+                element.table.map(row => {
+                    let schema = {};
+                    Object.keys(row).map((prop,key) => {
+                        schema[prop] = Object.values(row)[key]?.value;
+                    })
+                    schema_table.push(schema);
+                })
+                setting_page[element.name] = schema_table;
+            }
+        });
+
+        Object.keys(data).map(key => {
+            if (key != "titulo" && key != "proyecto" && key != "indicador" && key != "agente" && key != "dias" && key != "aux" && key != "categoria_id_categoria" && key != "tipo_usuario_tipo" && key != "especialidad_id_especialidad") {
+                setting_page[key.toLowerCase()] = data[key]
+            }
+        })
+
+        setting_data['descripcion'] = {
+            titulo: data.titulo,
+            proyecto: data.proyecto,
+            indicador: data.indicador,
+            agente: data.agente,
+            dias: data.dias,
+            page: setting_page,
+            aux: data.aux,
+        }
+        setting_data['categoria_id_categoria'] = data.categoria_id_categoria;
+        setting_data['tipo_usuario_tipo'] = data.tipo_usuario_tipo;
+        setting_data['especialidad_id_especialidad'] = data.especialidad_id_especialidad;
+
+        return setting_data;
     }
     const close_form = () => {
         reset_form();
@@ -115,6 +118,7 @@ export default function ComponentCrudTramites() {
         setList_icons_add([]);
         setConfirmation_edit(null);
         setView_modal_form(true);
+        setCapture_options_setting([]);
         reset_form();
     }
     const view_message_delete = (index) => {
@@ -123,35 +127,31 @@ export default function ComponentCrudTramites() {
     }
     const edit_form = (index) => {
         reset({
-            title: list_tramites[index]?.title,
-            project: list_tramites[index]?.project,
-            indicator: list_tramites[index]?.indicator,
-            agent: list_tramites[index]?.agent,
-            days: list_tramites[index]?.days,
+            titulo: list_tramites[index]?.titulo,
+            proyecto: list_tramites[index]?.proyecto,
+            indicador: list_tramites[index]?.indicador,
+            agente: list_tramites[index]?.agente,
+            dias: list_tramites[index]?.dias,
             aux: list_tramites[index]?.aux,
-            legajo: list_tramites[index]?.legajo,
-            clave_sysacad: list_tramites[index]?.clave_sysacad,
-            category: list_tramites[index]?.category,
-            user_type: list_tramites[index]?.user_type,
-            specialty: list_tramites[index]?.specialty
+            categoria_id_categoria: list_tramites[index]?.categoria_id_categoria,
+            tipo_usuario_tipo: list_tramites[index]?.tipo_usuario_tipo,
+            especialidad_id_especialidad: list_tramites[index]?.especialidad_id_especialidad
         })
-        setList_icons_add(["2", "6"]);
+        //setList_icons_add(["2", "6"]);
         setConfirmation_edit(index);
         setView_modal_form(true);
     }
     const reset_form = () => {
         reset({
-            title: '',
-            project: '',
-            indicator: '',
-            agent: '',
-            days: '',
+            titulo: '',
+            proyecto: '',
+            indicador: '',
+            agente: '',
+            dias: '',
             aux: '',
-            legajo: '',
-            clave_sysacad: '',
-            category: '',
-            user_type: '',
-            specialty: ''
+            categoria_id_categoria: '',
+            tipo_usuario_tipo: '',
+            especialidad_id_especialidad: ''
         })
     }
     const message_dragdrop = () => {
@@ -216,7 +216,7 @@ export default function ComponentCrudTramites() {
                 id: capture_icon_setting.id,
                 name: capture_name_setting,
                 options: capture_options_setting,
-                table: [get_column_table()]
+                table: (capture_icon_setting.id==="3")? [get_column_table()] : []
             }]);
         }
     }
@@ -226,12 +226,31 @@ export default function ComponentCrudTramites() {
         }
         setCapture_option_setting("");
     }
+    const add_column = () => {
+        let column = {
+            name: capture_option_setting,
+            type: capture_type_setting
+        }
+        if (capture_options_setting.filter(prev => prev.name == column.name).length == 0) {
+            setCapture_options_setting((prev) => [...prev, column])
+        }
+        setCapture_option_setting("");
+        setCapture_type_setting("");
+    }
+    const remove_column = (name) => {
+        setCapture_options_setting(capture_options_setting.filter(prev => prev.name != name));
+    }
     const remove_option = (option) => {
         setCapture_options_setting(capture_options_setting.filter(prev => prev != option));
     }
     const get_column_table = () => {
         let column = {};
-        capture_options_setting.map((option) => column[option] = "");
+        capture_options_setting.map((option) => {
+            column[option.name] = {
+                value: "",
+                type: option.type
+            }
+        });
         return column;
     }
     const rows_table = (key, index, action) => {
@@ -241,17 +260,17 @@ export default function ComponentCrudTramites() {
             setList_icons_add(list);
         }
         if (action === "-") {
-            if(list[key].table.length == 1){
+            if (list[key].table.length == 1) {
                 setList_icons_add(list_icons_add.filter(prev => prev != list_icons_add[key]));
-            }else{
+            } else {
                 list[key].table = list[key].table.filter(row => row !== list[key].table[index]);
                 setList_icons_add(list);
             }
         }
         forceUpdate();
     }
-    const capture_value_table = (row,key,e) => {
-        row[key] = e.target.value
+    const capture_value_table = (row, key, e) => {
+        row[key].value = e.target.value
         forceUpdate();
     }
     const search_setting = (icon) => {
@@ -262,7 +281,14 @@ export default function ComponentCrudTramites() {
                         <span className="text-primary font-weight-bold">Calumnas</span>
                         <div className="d-flex my-2">
                             <input type="text" value={capture_option_setting} className="form-control shadow-none border-primary" onChange={(e) => setCapture_option_setting(e.target.value)} placeholder="Columna..." />
-                            <button onClick={() => add_option()} type="button" className="ml-1 btn btn-primary border-0 pt-1">
+                            <select className="form-control shadow-none border-primary ml-1" onChange={(e) => setCapture_type_setting(e.target.value)} value={capture_type_setting}>
+                                <option value="">Tipo de dato...</option>
+                                <option value="text">Cadena</option>
+                                <option value="number">Numerico</option>
+                                <option value="date">Date</option>
+                                <option value="select">Seleccionable</option>
+                            </select>
+                            <button onClick={() => add_column()} type="button" className="ml-1 btn btn-primary border-0 pt-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className="bi bi-plus-circle-fill" viewBox="0 0 16 16">
                                     <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z" />
                                 </svg>
@@ -278,8 +304,8 @@ export default function ComponentCrudTramites() {
                                                 capture_options_setting.map((column, index) => {
                                                     return <th key={index} scope="col" className="py-1">
                                                         <div className="d-flex justify-content-between">
-                                                            <span>{column}</span>
-                                                            <button className="border-0 p-0 bg-transparent" type="button" onClick={() => remove_option(column)}>
+                                                            <span>{column.name}</span>
+                                                            <button className="border-0 p-0 bg-transparent" type="button" onClick={() => remove_column(column.name)}>
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="27" height="27" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
                                                                     <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
                                                                 </svg>
@@ -326,13 +352,52 @@ export default function ComponentCrudTramites() {
                 </>
         }
     }
+    const validation = (id) => {
+        return {};
+        switch (id) {
+            case "1": return {
+                required: true,
+                maxLength: 140,
+                pattern: /^([a-zA-Záéíóú]+)(\s[a-zA-Z]+)*$/i
+            };
+            case "2": return {
+                required: true,
+                min: 0
+            };
+            case "title": return {
+                required: true,
+                minLength: 5,
+                maxLength: 140,
+                pattern: /^([a-zA-Záéíóú]+)(\s[a-zA-Z]+)*$/i
+            }
+            case "aux": return {
+                pattern: /https?:\/\/[\w\-\.]+\.\w{2,5}\/?\$*/i
+            }
+            default: return {
+                required: true
+            };
+        }
+    }
+    const message_page_dynamic = (errors, icon) => {
+        return <span style={(errors[icon.name]?.type !== "required" && errors[icon.name]?.type !== "maxLength" && errors[icon.name]?.type !== "min" && errors[icon.name]?.type !== "pattern") ? {} : { color: "red" }}>
+            {
+                (errors[icon.name]?.type === "required") ? "El campo " + icon.name.toLowerCase() + " es requerido" :
+                    (errors[icon.name]?.type === "min") ? "El campo " + icon.name.toLowerCase() + " debe tener un minimo 0" :
+                        (errors[icon.name]?.type === "pattern") ? "El campo " + icon.name.toLowerCase() + " solo permite letras" :
+                            (errors[icon.name]?.type === "maxLength") ? "El campo" + icon.name.toLowerCase() + " debe tener menos de 140 caracteres" : (icon.id === "5") ? "¿" + icon.name + "?" : icon.name
+            }
+        </span>
+    }
+    const style_page_dynamic = (errors, name) => {
+        return (errors[name]?.type === "required" || errors[name]?.type === "maxLength" || errors[name]?.type === "min" || errors[name]?.type === "pattern") ? "form-control shadow-none border-danger" : "form-control shadow-none border-primary";
+    }
     const search_icon = (icon, key) => {
         switch (icon.id) {
             case "1": case "2": case "4": case "6":
                 return <>
                     <div className="d-flex justify-content-between">
                         <label htmlFor={"input-" + icon.name}>
-                            {icon.name}
+                            {message_page_dynamic(errors, icon)}
                         </label>
                         <button className="border-0 p-0 bg-transparent" type="button" onClick={() => remove_input(icon.name)}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
@@ -340,7 +405,12 @@ export default function ComponentCrudTramites() {
                             </svg>
                         </button>
                     </div>
-                    <input type={(icon.id === "1") ? "text" : (icon.id === "2" ? "number" : (icon.id === "4") ? "date" : "password")} className="form-control shadow-none border-primary" id={"input-" + icon.name} placeholder={icon.name + "..."} />
+                    <input
+                        type={(icon.id === "1") ? "text" : (icon.id === "2" ? "number" : (icon.id === "4") ? "date" : "password")}
+                        className={style_page_dynamic(errors, icon.name)} id={"input-" + icon.name}
+                        placeholder={icon.name + "..."}
+                        {...register(icon.name, validation(icon.id))}
+                    />
                 </>
             case "3":
                 return <>
@@ -376,7 +446,12 @@ export default function ComponentCrudTramites() {
                                         {
                                             Object.keys(row).map((key, index) => {
                                                 return <td key={index} className="text-center">
-                                                    <input type="text" value={row[key]} onChange={(e) => capture_value_table(row,key,e)} className="form-control shadow-none border-primary" placeholder={key + "..."} />
+                                                    <input
+                                                        type={row[key].type}
+                                                        value={row[key].value} onChange={(e) => capture_value_table(row, key, e)}
+                                                        className="form-control shadow-none border-primary"
+                                                        placeholder={key + "..."}
+                                                    />
                                                 </td>
                                             })
                                         }
@@ -395,7 +470,7 @@ export default function ComponentCrudTramites() {
                 return <>
                     <div className="d-flex justify-content-between">
                         <label htmlFor={"input-" + icon.name}>
-                            {(icon.id === "5") ? "¿" + icon.name + "?" : icon.name}
+                            {message_page_dynamic(errors, icon)}
                         </label>
                         <button className="border-0 p-0 bg-transparent" type="button" onClick={() => remove_input(icon.name)}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
@@ -405,7 +480,7 @@ export default function ComponentCrudTramites() {
                     </div>
                     {
                         (icon.id === "5") &&
-                        <select className="form-control shadow-none border-primary">
+                        <select className={style_page_dynamic(errors, icon.name)} {...register(icon.name, validation("default"))}>
                             <option value="">Seleccionar respuesta...</option>
                             <option value={true}>Si</option>
                             <option value={false}>No</option>
@@ -413,7 +488,7 @@ export default function ComponentCrudTramites() {
                     }
                     {
                         (icon.id === "7") &&
-                        <select className="form-control shadow-none border-primary">
+                        <select className={style_page_dynamic(errors, icon.name)} {...register(icon.name, validation("default"))}>
                             <option value="">Seleccionar {icon.name.toLowerCase()}...</option>
                             {
                                 icon.options.map((option, index) => {
@@ -519,8 +594,8 @@ export default function ComponentCrudTramites() {
                                 list_tramites.map((tramite, index) => {
                                     return (
                                         <tr key={index}>
-                                            <td className="text-center">{tramite.title}</td>
-                                            <td className="text-center">{tramite.category}</td>
+                                            <td className="text-center">{tramite.descripcion.titulo}</td>
+                                            <td className="text-center">{tramite.categoria_id_categoria}</td>
                                             <td className="px-0 text-center">
                                                 <button onClick={() => edit_form(index)} className="border-0 pb-1 rounded bg-primary mx-1">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-pencil text-white" viewBox="0 0 16 16">
@@ -558,61 +633,42 @@ export default function ComponentCrudTramites() {
                         <form method="POST" action="" onSubmit={handleSubmit((confirmation_edit == null) ? push_tramite : edit_tramite)}>
                             <div className="form-group">
                                 <label htmlFor="input-title">
-                                    {message_inputs(errors.title, "Titulo")}
+                                    {message_inputs(errors.titulo, "Titulo")}
                                 </label>
-                                <input type="text" className={style_inputs(errors.title)} id="input-title" {...register('title', {
-                                    required: true,
-                                    minLength: 5,
-                                    maxLength: 140,
-                                    pattern: /^([a-zA-Záéíóú]+)(\s[a-zA-Z]+)*$/i
-                                })} />
+                                <input type="text" className={style_inputs(errors.titulo)} id="input-title" {...register('titulo', validation("title"))} />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="input-project">
-                                    {message_inputs(errors.project, "Proyecto")}
+                                    {message_inputs(errors.proyecto, "Proyecto")}
                                 </label>
-                                <input type="number" className={style_inputs(errors.project)} id="input-project" {...register('project', {
-                                    required: true,
-                                    min: 0
-                                })} />
+                                <input type="number" className={style_inputs(errors.proyecto)} id="input-project" {...register('proyecto', validation("2"))} />
                             </div>
                             <div className="row">
                                 <div className="col form-group">
                                     <label htmlFor="input-indicator">
-                                        {message_inputs(errors.indicator, "Indicador")}
+                                        {message_inputs(errors.indicador, "Indicador")}
                                     </label>
-                                    <input type="number" className={style_inputs(errors.indicator)} id="input-indicator" {...register('indicator', {
-                                        required: true,
-                                        min: 0
-                                    })} />
+                                    <input type="number" className={style_inputs(errors.indicador)} id="input-indicator" {...register('indicador', validation("2"))} />
                                 </div>
                                 <div className="col form-group">
                                     <label htmlFor="input-agent">
-                                        {message_inputs(errors.agent, "Agente")}
+                                        {message_inputs(errors.agente, "Agente")}
                                     </label>
-                                    <input type="number" className={style_inputs(errors.agent)} id="input-agent" {...register('agent', {
-                                        required: true,
-                                        min: 0
-                                    })} />
+                                    <input type="number" className={style_inputs(errors.agente)} id="input-agent" {...register('agente', validation("2"))} />
                                 </div>
                             </div>
                             <div className="row">
                                 <div className="col form-group">
                                     <label htmlFor="input-days">
-                                        {message_inputs(errors.days, "Dias")}
+                                        {message_inputs(errors.dias, "Dias")}
                                     </label>
-                                    <input type="number" className={style_inputs(errors.days)} id="input-days" {...register('days', {
-                                        required: true,
-                                        min: 0
-                                    })} />
+                                    <input type="number" className={style_inputs(errors.dias)} id="input-days" {...register('dias', validation("2"))} />
                                 </div>
                                 <div className="col form-group">
                                     <label htmlFor="input-aux">
                                         {message_inputs(errors.aux, "Auxiliar")}
                                     </label>
-                                    <input type="text" className={style_inputs(errors.aux)} id="input-aux" {...register('aux', {
-                                        pattern: /https?:\/\/[\w\-\.]+\.\w{2,5}\/?\$*/i
-                                    })} />
+                                    <input type="text" className={style_inputs(errors.aux)} id="input-aux" {...register('aux', validation("aux"))} />
                                 </div>
                             </div>
                             <div className="form-group mb-3">
@@ -653,25 +709,25 @@ export default function ComponentCrudTramites() {
                                 </div>
                             </div>
                             <label className="mt-0">
-                                {message_dropdown(errors.category, "Categoria")}
+                                {message_dropdown(errors.categoria_id_categoria, "Categoria")}
                             </label>
-                            <select className={style_inputs(errors.category)} {...register('category', { required: true })}>
+                            <select className={style_inputs(errors.categoria_id_categoria)} {...register('categoria_id_categoria', validation("default"))}>
                                 <option value="">Seleccionar categoria...</option>
                                 <option value="Name 1">Name 1</option>
                                 <option value="Name 2">Name 2</option>
                             </select>
                             <label className="mt-3">
-                                {message_dropdown(errors.user_type, "Tipo de usuario")}
+                                {message_dropdown(errors.tipo_usuario_tipo, "Tipo de usuario")}
                             </label>
-                            <select className={style_inputs(errors.user_type)} {...register('user_type', { required: true })}>
+                            <select className={style_inputs(errors.tipo_usuario_tipo)} {...register('tipo_usuario_tipo', validation("default"))}>
                                 <option value="">Seleccionar tipo usuario...</option>
                                 <option value="Name 1">Name 1</option>
                                 <option value="Name 2">Name 2</option>
                             </select>
                             <label className="mt-3">
-                                {message_dropdown(errors.specialty, "Especialidad")}
+                                {message_dropdown(errors.especialidad_id_especialidad, "Especialidad")}
                             </label>
-                            <select className={style_inputs(errors.specialty)} {...register('specialty', { required: true })}>
+                            <select className={style_inputs(errors.especialidad_id_especialidad)} {...register('especialidad_id_especialidad', validation("default"))}>
                                 <option value="">Seleccionar especialidad...</option>
                                 <option value="Name 1">Name 1</option>
                                 <option value="Name 2">Name 2</option>
