@@ -76,7 +76,6 @@ export default function ComponentCrudTramites() {
     }
     const validate_columns_table = () => {
         let validation = !/^([a-zA-Záéíóú]+)(\s[a-zA-Z])*$/i.test(capture_option_setting);
-        console.log(capture_type_setting);
         return (capture_type_setting == "" || validation);
     }
     const validate_tables = () => {
@@ -96,6 +95,7 @@ export default function ComponentCrudTramites() {
                 }
             })
         })
+        console.log(indexs);
         setCapture_index_tables(indexs);
         return (indexs.length === 0);
     }
@@ -144,6 +144,7 @@ export default function ComponentCrudTramites() {
     const view_form = () => {
         clearErrors();
         setList_icons_add([]);
+        setView_modal_page(false);
         setConfirmation_edit(null);
         setView_modal_form(true);
         setCapture_options_setting([]);
@@ -238,7 +239,15 @@ export default function ComponentCrudTramites() {
         setCapture_icon_setting({});
     }
     const add_icon = () => {
-        if(message_inputs_setting() === null && capture_options_setting.length > 0){
+        let validate = false;
+        if (capture_icon_setting.id === "1" || capture_icon_setting.id === "2" || capture_icon_setting.id === "4" || capture_icon_setting.id === "5" || capture_icon_setting.id === "6") {
+            validate = (message_inputs_setting() === null);
+        }
+        if (capture_icon_setting.id === "3" || capture_icon_setting.id === "7") {
+            validate = (message_inputs_setting() === null && capture_options_setting.length > 0);
+        }
+
+        if (validate) {
             setView_modal_page(false);
             if (list_icons_add.find(icon => icon.name === capture_name_setting) === undefined) {
                 setList_icons_add((prev) => [...prev, {
@@ -251,13 +260,13 @@ export default function ComponentCrudTramites() {
         }
     }
     const add_option = () => {
-        if (!capture_options_setting.includes(capture_option_setting)) {
+        if (!capture_options_setting.includes(capture_option_setting) && capture_option_setting !== "") {
             setCapture_options_setting((prev) => [...prev, capture_option_setting]);
         }
         setCapture_option_setting("");
     }
     const add_column = () => {
-        if(!validate_columns_table()){
+        if (!validate_columns_table()) {
             let column = {
                 name: capture_option_setting,
                 type: capture_type_setting
@@ -316,27 +325,27 @@ export default function ComponentCrudTramites() {
         forceUpdate();
     }
     const message_inputs_setting = () => {
-        let validation = !/^([a-zA-Záéíóú]+)(\s[a-zA-Z])*$/i.test(capture_name_setting);
+        let validation = !/^([ a-zA-Záéíóú]+)(\s[a-zA-Z])*$/i.test(capture_name_setting);
         return (validation && capture_name_setting != "") ?
             <label style={validation ? { color: "red" } : {}} htmlFor="input-name" className="w-100 pl-1">
                 Solo se permiten letras
             </label>
             :
-            (capture_name_setting === "")? undefined : null;
+            (capture_name_setting === "") ? undefined : null;
     }
     const search_setting = (icon) => {
         switch (icon.id) {
             case "3":
                 return <>
                     <div className="pt-3">
-                        <span className={(capture_options_setting.length > 0)? "text-primary font-weight-bold pl-1" : "text-danger font-weight-bold pl-1"}>
+                        <span className={(capture_options_setting.length > 0) ? "text-primary font-weight-bold pl-1" : "text-danger font-weight-bold pl-1"}>
                             {
-                                (capture_options_setting.length > 0)? "Calumnas" : "Debe registrar por lo menos una columna"
+                                (capture_options_setting.length > 0) ? "Calumnas" : "Debe registrar por lo menos una columna"
                             }
                         </span>
                         <div className="d-flex my-2">
-                            <input type="text" value={capture_option_setting} className={(validate_columns_table())? "form-control shadow-none border-danger" : "form-control shadow-none border-primary"} onChange={(e) => setCapture_option_setting(e.target.value)} placeholder="Columna..." />
-                            <select className={(validate_columns_table())? "form-control shadow-none border-danger ml-1":"form-control shadow-none border-primary ml-1" } onChange={(e) => setCapture_type_setting(e.target.value)} value={capture_type_setting}>
+                            <input type="text" value={capture_option_setting} className={(validate_columns_table()) ? "form-control shadow-none border-danger" : "form-control shadow-none border-primary"} onChange={(e) => setCapture_option_setting(e.target.value)} placeholder="Columna..." />
+                            <select className={(validate_columns_table()) ? "form-control shadow-none border-danger ml-1" : "form-control shadow-none border-primary ml-1"} onChange={(e) => setCapture_type_setting(e.target.value)} value={capture_type_setting}>
                                 <option value="">Tipo de dato...</option>
                                 <option value="text">Cadena</option>
                                 <option value="number">Numerico</option>
@@ -378,9 +387,9 @@ export default function ComponentCrudTramites() {
             case "7":
                 return <>
                     <div className="pt-3">
-                        <span className={(capture_options_setting.length > 1)? "text-primary font-weight-bold pl-1" : "text-danger font-weight-bold pl-1"}>
+                        <span className={(capture_options_setting.length > 1) ? "text-primary font-weight-bold pl-1" : "text-danger font-weight-bold pl-1"}>
                             {
-                                (capture_options_setting.length > 1)? "Opciones" : "Debe registrar por lo menos dos opciones"
+                                (capture_options_setting.length > 1) ? "Opciones" : "Debe registrar por lo menos dos opciones"
                             }
                         </span>
                         <div className="d-flex my-2">
@@ -411,7 +420,6 @@ export default function ComponentCrudTramites() {
         }
     }
     const validation = (id) => {
-        return {};
         switch (id) {
             case "1": return {
                 required: true,
@@ -502,7 +510,7 @@ export default function ComponentCrudTramites() {
             case "3":
                 return <>
                     <div className="d-flex justify-content-between">
-                        <label htmlFor={"input-" + icon.name}>
+                        <label htmlFor={"input-" + icon.name} style={(icon.name === message_table(icon.name)) ? {} : { color: "red" }}>
                             {message_table(icon.name)}
                         </label>
                         <button className="border-0 p-0 bg-transparent" type="button" onClick={() => remove_input(icon.name)}>
@@ -768,7 +776,7 @@ export default function ComponentCrudTramites() {
                                             <label className="text-primary font-weight-bold w-100 text-center">Configuracion</label>
                                             <div className="pb-3 pt-1">
                                                 {message_inputs_setting(capture_icon_setting)}
-                                                <input type="text" id="input-name" className={(message_inputs_setting() === null)? "form-control shadow-none border-primary":"form-control shadow-none border-danger"} onChange={(e) => setCapture_name_setting(e.target.value)} value={capture_name_setting} placeholder="Nombre..." />
+                                                <input type="text" id="input-name" className={(message_inputs_setting() === null) ? "form-control shadow-none border-primary" : "form-control shadow-none border-danger"} onChange={(e) => setCapture_name_setting(e.target.value)} value={capture_name_setting} placeholder="Nombre..." />
                                                 {search_setting(capture_icon_setting)}
                                             </div>
                                             <div className="d-flex justify-content-between">
