@@ -84,11 +84,17 @@ export default function ComponentCrudTramites() {
             prev.table.map(keys => {
                 for (let key of Object.values(keys)) {
                     if (key.value === "") {
-                        indexs.push(index);
+                        indexs.push({
+                            index,
+                            error: "required"
+                        });
                     }
                     if (key.value !== "") {
                         if (validate_date_table(key)) {
-                            indexs.push(-1);
+                            indexs.push({
+                                index,
+                                error: "invalid"
+                            });
                         }
                     }
                     break;
@@ -445,10 +451,11 @@ export default function ComponentCrudTramites() {
             };
         }
     }
-    const message_table = (name) => {
-        for (let index of capture_index_tables) {
-            if (index === -1) return "Los datos de la tabla " + name.toLowerCase() + " son invalidos";
-            if (list_icons_add[index]) return "Los datos de la tabla " + name.toLowerCase() + " son requeridos";
+    const message_table = (name,key) => {
+        for (let prev of capture_index_tables) {
+            if (prev.index === key) {
+                return (prev.error === "required") ? "Los datos de la tabla " + name.toLowerCase() + " son requeridos" : "Los datos de la tabla " + name.toLowerCase() + " son invalidos";
+            }
         }
         return name;
     }
@@ -510,8 +517,8 @@ export default function ComponentCrudTramites() {
             case "3":
                 return <>
                     <div className="d-flex justify-content-between">
-                        <label htmlFor={"input-" + icon.name} style={(icon.name === message_table(icon.name)) ? {} : { color: "red" }}>
-                            {message_table(icon.name)}
+                        <label htmlFor={"input-" + icon.name} style={(icon.name === message_table(icon.name,key)) ? {} : { color: "red" }}>
+                            {message_table(icon.name,key)}
                         </label>
                         <button className="border-0 p-0 bg-transparent" type="button" onClick={() => remove_input(icon.name)}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
