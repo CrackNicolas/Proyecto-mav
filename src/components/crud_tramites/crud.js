@@ -20,6 +20,7 @@ export default function ComponentCrudTramites() {
     const [capture_type_setting, setCapture_type_setting] = useState("");
     const [capture_option_setting, setCapture_option_setting] = useState("");
     const [capture_options_setting, setCapture_options_setting] = useState([]);
+    const [capture_index_tables, setCapture_index_tables] = useState([]);
     const [list_icons_add, setList_icons_add] = useState([]);
     const [list_tramites, setList_tramites] = useState([]);
     const { register, formState: { errors }, handleSubmit, clearErrors, reset } = useForm();
@@ -61,25 +62,47 @@ export default function ComponentCrudTramites() {
         //setList_tramites(result);
     }
     const push_tramite = (data) => {
-        let data_setting = setting_data_tramite(data);
+        if (validate_tables()) {
+            let data_setting = setting_data_tramite(data);
 
-        setConfirmation_edit(null);
-        close_form();
-        setSend_datos(true);
-        //const result = await axios.push("");
-        setList_tramites((prev) => [...prev, data_setting]);
-        //const result = await axios.get(""); //Actualizar tramites
-        //setList_tramites(result);
+            setConfirmation_edit(null);
+            close_form();
+            setSend_datos(true);
+            //const result = await axios.push("");
+            setList_tramites((prev) => [...prev, data_setting]);
+            //const result = await axios.get(""); //Actualizar tramites
+            //setList_tramites(result);
+        }
+    }
+    const validate_tables = () => {
+        let indexs = [];
+        list_icons_add.map((prev, index) => {
+            prev.table.map(keys => {
+                for (let key of Object.values(keys)) {
+                    if (key.value === "") {
+                        indexs.push(index);
+                    }
+                    if (key.value !== "") {
+                        if (validate_date_table(key)) {
+                            indexs.push(-1);
+                        }
+                    }
+                    break;
+                }
+            })
+        })
+        setCapture_index_tables(indexs);
+        return (indexs.length === 0);
     }
     const setting_data_tramite = (data) => {
         let setting_data = {}, setting_page = {};
-        
+
         list_icons_add.map(element => {
-            if(element.table.length!=0){
+            if (element.table.length != 0) {
                 let schema_table = [];
                 element.table.map(row => {
                     let schema = {};
-                    Object.keys(row).map((prop,key) => {
+                    Object.keys(row).map((prop, key) => {
                         schema[prop] = Object.values(row)[key]?.value;
                     })
                     schema_table.push(schema);
@@ -169,7 +192,7 @@ export default function ComponentCrudTramites() {
             {
                 (input?.type === "required") ? (name === "Dias") ? "Los dias son requeridos" : (name === "Clave sysacad") ? "La clave sysacad es requerida" : "El " + name.toLowerCase() + " es requerido" :
                     (input?.type === "min") ? (name === "Dias") ? "Los dias deben tener un minimo de 0" : "El " + name.toLowerCase() + " debe tener un minimo 0" :
-                        (input?.type === "pattern") ? (name === "Auxiliar") ? "La url no es valida" : "El " + name.toLowerCase() + " solo permite letras" :
+                        (input?.type === "pattern") ? (name === "Auxiliar") ? "La url no es valida" : (name === "Indicador" || name === "Proyecto" || name === "Agente") ? "El " + name.toLowerCase() + " solo permite numeros" : (name === "Dias") ? "Los dias solo permiten numeros" : "El " + name.toLowerCase() + " solo permite letras" :
                             (input?.type === "maxLength") ? "El " + name.toLowerCase() + " debe tener menos de 140 caracteres" :
                                 (input?.type === "minLength") ? "El " + name.toLowerCase() + " debe tener un minimo de 5 caracteres" : name
             }
@@ -216,7 +239,7 @@ export default function ComponentCrudTramites() {
                 id: capture_icon_setting.id,
                 name: capture_name_setting,
                 options: capture_options_setting,
-                table: (capture_icon_setting.id==="3")? [get_column_table()] : []
+                table: (capture_icon_setting.id === "3") ? [get_column_table()] : []
             }]);
         }
     }
@@ -243,7 +266,7 @@ export default function ComponentCrudTramites() {
     const remove_option = (option) => {
         setCapture_options_setting(capture_options_setting.filter(prev => prev != option));
     }
-    const get_column_table = (key) => {
+    const get_column_table = () => {
         let column = {};
         capture_options_setting.map((option) => {
             column[option.name] = {
@@ -255,7 +278,7 @@ export default function ComponentCrudTramites() {
     }
     const get_setting_column_table = (key) => {
         let column = {};
-        Object.keys(list_icons_add[key].table[0]).map((prop,index) => {
+        Object.keys(list_icons_add[key].table[0]).map((prop, index) => {
             column[prop] = {
                 value: "",
                 type: Object.values(list_icons_add[key].table[0])[index]?.type
@@ -296,7 +319,6 @@ export default function ComponentCrudTramites() {
                                 <option value="text">Cadena</option>
                                 <option value="number">Numerico</option>
                                 <option value="date">Date</option>
-                                <option value="select">Seleccionable</option>
                             </select>
                             <button onClick={() => add_column()} type="button" className="ml-1 btn btn-primary border-0 pt-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" className="bi bi-plus-circle-fill" viewBox="0 0 16 16">
@@ -372,7 +394,8 @@ export default function ComponentCrudTramites() {
             };
             case "2": return {
                 required: true,
-                min: 0
+                min: 0,
+                pattern: /^\d*$/i
             };
             case "title": return {
                 required: true,
@@ -387,6 +410,34 @@ export default function ComponentCrudTramites() {
                 required: true
             };
         }
+    }
+    const message_table = (name) => {
+        for (let index of capture_index_tables) {
+            if (index === -1) return "Los datos de la tabla " + name.toLowerCase() + " son invalidos";
+            if (list_icons_add[index]) return "Los datos de la tabla " + name.toLowerCase() + " son requeridos";
+        }
+        return name;
+    }
+    const validate_date_table = (row) => {
+        let validation = false;
+        if (row.type === "text") {
+            validation = !/^([a-zA-Záéíóú]+)(\s[a-zA-Z])*$/i.test(row.value);
+        }
+        if (row.type === "number") {
+            validation = !/^\d*$/i.test(row.value);
+        }
+        return validation && row.value != "";
+    }
+    const message_inputs_table = (row) => {
+        let validation = validate_date_table(row);
+        return (validation) ?
+            <span style={validation ? { color: "red" } : {}}>
+                {
+                    (row.type === "text") ? "Solo se permiten letras" : "Solo se permiten numeros"
+                }
+            </span>
+            :
+            undefined
     }
     const message_page_dynamic = (errors, icon) => {
         return <span style={(errors[icon.name]?.type !== "required" && errors[icon.name]?.type !== "maxLength" && errors[icon.name]?.type !== "min" && errors[icon.name]?.type !== "pattern") ? {} : { color: "red" }}>
@@ -426,7 +477,7 @@ export default function ComponentCrudTramites() {
                 return <>
                     <div className="d-flex justify-content-between">
                         <label htmlFor={"input-" + icon.name}>
-                            {icon.name}
+                            {message_table(icon.name)}
                         </label>
                         <button className="border-0 p-0 bg-transparent" type="button" onClick={() => remove_input(icon.name)}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
@@ -456,6 +507,7 @@ export default function ComponentCrudTramites() {
                                         {
                                             Object.keys(row).map((key, index) => {
                                                 return <td key={index} className="text-center">
+                                                    {message_inputs_table(row[key])}
                                                     <input
                                                         type={row[key].type}
                                                         value={row[key].value} onChange={(e) => capture_value_table(row, key, e)}
