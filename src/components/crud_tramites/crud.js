@@ -4,6 +4,8 @@ import { useForm } from 'react-hook-form';
 
 //import axios from 'axios';
 
+//VALIDAR QUE LOS PASSWORD TENGAN NUMEROS Y LETRAS PARA EVITAR ERRORES AL MOMENTO DE LA EDICION
+
 export default function ComponentCrudTramites() {
     const isTablet = useMediaQuery({ query: '(max-width: 991px)' })
     const isMobile = useMediaQuery({ query: "(max-width: 675px)" });
@@ -36,7 +38,7 @@ export default function ComponentCrudTramites() {
             //const result = await axios.get("url"); //Obtener todos los tramites
             //setList_tramites(result);
         } else {
-            if (!(/^([ a-zA-Záéíóú1-9]{1,60})(\s[a-zA-Z]+)*$/i).test(e.target.value)) {
+            if (!(/^([ a-zA-Záéíñóú1-9]{1,60})(\s[a-zA-Z]+)*$/i).test(e.target.value)) {
                 setConfirmation_search(undefined);
                 //setList_tramites([]); //Limpiar
             } else {
@@ -75,7 +77,7 @@ export default function ComponentCrudTramites() {
         }
     }
     const validate_columns_table = () => {
-        let validation = !/^([a-zA-Záéíóú]+)(\s[a-zA-Z])*$/i.test(capture_option_setting);
+        let validation = !/^([a-zA-Záñéíóú]+)(\s[a-zA-Z])*$/i.test(capture_option_setting);
         return (capture_type_setting == "" || validation);
     }
     const validate_tables = () => {
@@ -101,7 +103,6 @@ export default function ComponentCrudTramites() {
                 }
             })
         })
-        console.log(indexs);
         setCapture_index_tables(indexs);
         return (indexs.length === 0);
     }
@@ -119,6 +120,8 @@ export default function ComponentCrudTramites() {
                     schema_table.push(schema);
                 })
                 setting_page[element.name] = schema_table;
+            } else {
+                setting_page[element.name] = element.options;
             }
         });
 
@@ -161,7 +164,7 @@ export default function ComponentCrudTramites() {
         setSend_datos(false);
     }
     const edit_form = (index) => {
-        reset({
+        let schema = {
             titulo: list_tramites[index]?.titulo,
             proyecto: list_tramites[index]?.proyecto,
             indicador: list_tramites[index]?.indicador,
@@ -171,10 +174,61 @@ export default function ComponentCrudTramites() {
             categoria_id_categoria: list_tramites[index]?.categoria_id_categoria,
             tipo_usuario_tipo: list_tramites[index]?.tipo_usuario_tipo,
             especialidad_id_especialidad: list_tramites[index]?.especialidad_id_especialidad
-        })
-        //setList_icons_add(["2", "6"]);
+        }
+        setList_icons_add(setting_data_edit_form(list_tramites[index].descripcion.page));
+        reset(setting_values_page(schema, list_tramites[index].descripcion.page));
         setConfirmation_edit(index);
         setView_modal_form(true);
+    }
+    const capitalize_letter = (cadena) => {
+        return cadena.charAt(0).toUpperCase() + cadena.slice(1);
+    }
+    const setting_values_page = (schema, data) => {
+        Object.values(data).map((prop, index) => {
+            schema[capitalize_letter(Object.keys(data)[index])] = prop;
+        })
+        return schema;
+    }
+    const setting_data_edit_form = (data) => {
+        let schemas = [];
+        Object.values(data).map((prop, index) => {
+            let id = get_setting_id(prop);
+            schemas.push({
+                id,
+                name: capitalize_letter(Object.keys(data)[index]),
+                options: (id === "7" || id === "5") ? prop : [],
+                table: (id === "3") ? setting_values_table(prop) : []
+            })
+        })
+        return schemas;
+    }
+    const setting_values_table = (data) => {
+        let schemas = [];
+        data.map(props => {
+            let schema = {};
+            Object.values(props).map((prop, index) => {
+                let id = get_setting_id(prop);
+                schema[Object.keys(props)[index]] = {
+                    type: (id === "1") ? "text" : (id === "2") ? "number" : "date",
+                    value: prop
+                }
+            })
+            schemas.push(schema);
+        })
+        return schemas;
+    }
+    const get_setting_id = (prop) => {
+        if ((typeof prop) === "object") {
+            if (prop[0] != undefined) {
+                if (prop[0] === true) return "5";
+                return (Object.keys(prop[0])[0] === "0") ? "7" : "3";
+            }
+        } else {
+            if (/^([ a-zA-Záéñíóú]+)(\s[a-zA-Z])*$/i.test(prop)) return "1";
+            if (/^\d*$/i.test(prop)) return "2";
+            if (/^\d*$/i.test(prop.split("-")[0])) return "4";
+        }
+        return "6";
     }
     const reset_form = () => {
         reset({
@@ -187,7 +241,7 @@ export default function ComponentCrudTramites() {
             categoria_id_categoria: '',
             tipo_usuario_tipo: '',
             especialidad_id_especialidad: ''
-        })
+        });
     }
     const message_dragdrop = () => {
         return {
@@ -259,7 +313,7 @@ export default function ComponentCrudTramites() {
                 setList_icons_add((prev) => [...prev, {
                     id: capture_icon_setting.id,
                     name: capture_name_setting,
-                    options: capture_options_setting,
+                    options: (capture_icon_setting.id === "5") ? [true, false] : capture_options_setting,
                     table: (capture_icon_setting.id === "3") ? [get_column_table()] : []
                 }]);
             }
@@ -426,6 +480,7 @@ export default function ComponentCrudTramites() {
         }
     }
     const validation = (id) => {
+        return {};
         switch (id) {
             case "1": return {
                 required: true,
@@ -451,7 +506,7 @@ export default function ComponentCrudTramites() {
             };
         }
     }
-    const message_table = (name,key) => {
+    const message_table = (name, key) => {
         for (let prev of capture_index_tables) {
             if (prev.index === key) {
                 return (prev.error === "required") ? "Los datos de la tabla " + name.toLowerCase() + " son requeridos" : "Los datos de la tabla " + name.toLowerCase() + " son invalidos";
@@ -462,7 +517,7 @@ export default function ComponentCrudTramites() {
     const validate_date_table = (row) => {
         let validation = false;
         if (row.type === "text") {
-            validation = !/^([a-zA-Záéíóú]+)(\s[a-zA-Z])*$/i.test(row.value);
+            validation = !/^([a-zA-Záéíóñú]+)(\s[a-zA-Z])*$/i.test(row.value);
         }
         if (row.type === "number") {
             validation = !/^\d*$/i.test(row.value);
@@ -517,8 +572,8 @@ export default function ComponentCrudTramites() {
             case "3":
                 return <>
                     <div className="d-flex justify-content-between">
-                        <label htmlFor={"input-" + icon.name} style={(icon.name === message_table(icon.name,key)) ? {} : { color: "red" }}>
-                            {message_table(icon.name,key)}
+                        <label htmlFor={"input-" + icon.name} style={(icon.name === message_table(icon.name, key)) ? {} : { color: "red" }}>
+                            {message_table(icon.name, key)}
                         </label>
                         <button className="border-0 p-0 bg-transparent" type="button" onClick={() => remove_input(icon.name)}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
@@ -583,16 +638,14 @@ export default function ComponentCrudTramites() {
                     </div>
                     {
                         (icon.id === "5") &&
-                        <select className={style_page_dynamic(errors, icon.name)} {...register(icon.name, validation("default"))}>
-                            <option value="">Seleccionar respuesta...</option>
+                        <select className={style_page_dynamic(errors, icon.name)}>
                             <option value={true}>Si</option>
                             <option value={false}>No</option>
                         </select>
                     }
                     {
                         (icon.id === "7") &&
-                        <select className={style_page_dynamic(errors, icon.name)} {...register(icon.name, validation("default"))}>
-                            <option value="">Seleccionar {icon.name.toLowerCase()}...</option>
+                        <select className={style_page_dynamic(errors, icon.name)}>
                             {
                                 icon.options.map((option, index) => {
                                     return <option key={index} value={option}>{option}</option>
