@@ -25,7 +25,7 @@ export default function ComponentCrudTramites() {
     const [index_edit_page, setIndex_edit_page] = useState(-1);
     const [list_icons_add, setList_icons_add] = useState([]);
     const [list_tramites, setList_tramites] = useState([]);
-    const { register, formState: { errors }, handleSubmit, clearErrors, reset } = useForm();
+    const { register, unregister, formState: { errors }, handleSubmit, clearErrors, reset } = useForm();
 
     const [any, forceUpdate] = useReducer(prev => prev + 1, 0);
 
@@ -45,7 +45,7 @@ export default function ComponentCrudTramites() {
         setList_tramites(list_tramites.filter((tramite, index) => index == e.target.value));
     }
     const delete_tramite = () => {
-        setList_tramites(list_tramites.filter((tramite,index) => index !== confirmation_delete));
+        setList_tramites(list_tramites.filter((tramite, index) => index !== confirmation_delete));
         setConfirmation_delete(undefined);
     }
     const edit_tramite = (data) => {
@@ -55,6 +55,7 @@ export default function ComponentCrudTramites() {
             list[confirmation_edit] = data_setting;
             setList_tramites(list);
             setConfirmation_edit(undefined);
+            setList_icons_add([]);
             close_form();
             setSend_datos(true);
         }
@@ -70,7 +71,7 @@ export default function ComponentCrudTramites() {
         }
     }
     const validate_columns_table = () => {
-        let validation = !/^([a-zA-Záñéíóú]+)(\s[a-zA-Z])*$/i.test(capture_option_setting);
+        let validation = !/^([ a-zA-Záñéíóú]+)(\s[a-zA-Z])*$/i.test(capture_option_setting);
         return (capture_type_setting == "" || validation);
     }
     const validate_tables = () => {
@@ -112,15 +113,17 @@ export default function ComponentCrudTramites() {
                     })
                     schema_table.push(schema);
                 })
-                setting_page[element.name] = schema_table;
+                setting_page[element.name.toLowerCase()] = schema_table;
             } else {
-                setting_page[element.name] = element.options;
+                setting_page[element.name.toLowerCase()] = element.options;
             }
         });
 
         Object.keys(data).map(key => {
             if (key != "titulo" && key != "proyecto" && key != "indicador" && key != "agente" && key != "dias" && key != "aux" && key != "categoria_id_categoria" && key != "tipo_usuario_tipo" && key != "especialidad_id_especialidad") {
-                setting_page[key.toLowerCase()] = data[key]
+                if (typeof data[key] !== "object") {
+                    setting_page[key.toLowerCase()] = data[key]
+                }
             }
         })
 
@@ -158,12 +161,12 @@ export default function ComponentCrudTramites() {
     }
     const edit_form = (index) => {
         let schema = {
-            titulo: list_tramites[index]?.titulo,
-            proyecto: list_tramites[index]?.proyecto,
-            indicador: list_tramites[index]?.indicador,
-            agente: list_tramites[index]?.agente,
-            dias: list_tramites[index]?.dias,
-            aux: list_tramites[index]?.aux,
+            titulo: list_tramites[index]?.descripcion.titulo,
+            proyecto: list_tramites[index]?.descripcion.proyecto,
+            indicador: list_tramites[index]?.descripcion.indicador,
+            agente: list_tramites[index]?.descripcion.agente,
+            dias: list_tramites[index]?.descripcion.dias,
+            aux: list_tramites[index]?.descripcion.aux,
             categoria_id_categoria: list_tramites[index]?.categoria_id_categoria,
             tipo_usuario_tipo: list_tramites[index]?.tipo_usuario_tipo,
             especialidad_id_especialidad: list_tramites[index]?.especialidad_id_especialidad
@@ -213,7 +216,7 @@ export default function ComponentCrudTramites() {
     const get_setting_id = (prop) => {
         if ((typeof prop) === "object") {
             if (prop[0] != undefined) {
-                return (prop[0] === true) ? "5" : (Object.keys(prop[0])[0] === "0") ? "7" : "3";
+                return (prop[0] === true) ? "5" : (Object.keys(prop[0])[0].toLowerCase() === "0") ? "7" : "3";
             }
         } else {
             if (/^([ a-zA-Záéñíóú]+)(\s[a-zA-Z])*$/i.test(prop)) return "1";
@@ -278,6 +281,7 @@ export default function ComponentCrudTramites() {
         setCapture_icon_setting({ id });
     }
     const remove_input = (name) => {
+        unregister(name);
         setList_icons_add(list_icons_add.filter(icon => icon.name != name && icon.id != undefined));
     }
     const remove_icon = () => {
@@ -326,6 +330,7 @@ export default function ComponentCrudTramites() {
                 setList_icons_add(list);
             }
         }
+        setIndex_edit_page(-1);
     }
     const add_option = () => {
         if (!capture_options_setting.includes(capture_option_setting) && capture_option_setting !== "") {
@@ -488,11 +493,12 @@ export default function ComponentCrudTramites() {
         }
     }
     const validation = (id) => {
+        return {};
         switch (id) {
             case "1": return {
                 required: true,
                 maxLength: 140,
-                pattern: /^([a-zA-Záéíóú]+)(\s[a-zA-Z]+)*$/i
+                pattern: /^([ a-zA-Záéíóú]+)(\s[a-zA-Z]+)*$/i
             };
             case "2": return {
                 required: true,
@@ -503,7 +509,7 @@ export default function ComponentCrudTramites() {
                 required: true,
                 minLength: 5,
                 maxLength: 140,
-                pattern: /^([a-zA-Záéíóú]+)(\s[a-zA-Z]+)*$/i
+                pattern: /^([ a-zA-Záéíóú]+)(\s[a-zA-Z]+)*$/i
             }
             case "aux": return {
                 pattern: /https?:\/\/[\w\-\.]+\.\w{2,5}\/?\$*/i
@@ -524,7 +530,7 @@ export default function ComponentCrudTramites() {
     const validate_date_table = (row) => {
         let validation = false;
         if (row.type === "text") {
-            validation = !/^([a-zA-Záéíóñú]+)(\s[a-zA-Z])*$/i.test(row.value);
+            validation = !/^([ a-zA-Záéíóñú]+)(\s[a-zA-Z])*$/i.test(row.value);
         }
         if (row.type === "number") {
             validation = !/^\d*$/i.test(row.value);
