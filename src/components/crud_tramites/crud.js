@@ -220,15 +220,14 @@ export default function ComponentCrudTramites() {
     const get_setting_id = (prop) => {
         if ((typeof prop) === "object") {
             if (prop[0] != undefined) {
-                if (prop[0] === true) return "5";
-                return (Object.keys(prop[0])[0] === "0") ? "7" : "3";
+                return (prop[0] === true) ? "5" : (Object.keys(prop[0])[0] === "0") ? "7" : "3";
             }
         } else {
             if (/^([ a-zA-Záéñíóú]+)(\s[a-zA-Z])*$/i.test(prop)) return "1";
             if (/^\d*$/i.test(prop)) return "2";
             if (/^\d*$/i.test(prop.split("-")[0])) return "4";
+            if (/^([ a-zA-Záéñíóú0-9]+)(\s[0-9a-zA-Z])*$/i.test(prop)) return "6";
         }
-        return "6";
     }
     const reset_form = () => {
         reset({
@@ -286,7 +285,7 @@ export default function ComponentCrudTramites() {
         setCapture_icon_setting({ id });
     }
     const remove_input = (name) => {
-        setList_icons_add(list_icons_add.filter(icon => icon.name != name));
+        setList_icons_add(list_icons_add.filter(icon => icon.name != name && icon.id != undefined));
     }
     const remove_icon = () => {
         setView_modal_page(false);
