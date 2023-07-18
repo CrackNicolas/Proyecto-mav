@@ -493,7 +493,6 @@ export default function ComponentCrudTramites() {
         }
     }
     const validation = (id) => {
-        return {};
         switch (id) {
             case "1": return {
                 required: true,
