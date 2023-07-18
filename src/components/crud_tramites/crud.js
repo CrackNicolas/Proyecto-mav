@@ -2,9 +2,8 @@ import { useState, Fragment, useReducer } from "react";
 import { useMediaQuery } from "react-responsive"
 import { useForm } from 'react-hook-form';
 
-//import axios from 'axios';
-
 //VALIDAR QUE LOS PASSWORD TENGAN NUMEROS Y LETRAS PARA EVITAR ERRORES AL MOMENTO DE LA EDICION
+//VALIDA FLUJO INNECESARIO DEL CODIGO AGREGANDO CONTINUE BREAK RETURN
 
 export default function ComponentCrudTramites() {
     const isTablet = useMediaQuery({ query: '(max-width: 991px)' })
@@ -23,6 +22,7 @@ export default function ComponentCrudTramites() {
     const [capture_option_setting, setCapture_option_setting] = useState("");
     const [capture_options_setting, setCapture_options_setting] = useState([]);
     const [capture_index_tables, setCapture_index_tables] = useState([]);
+    const [index_edit_page, setIndex_edit_page] = useState(-1);
     const [list_icons_add, setList_icons_add] = useState([]);
     const [list_tramites, setList_tramites] = useState([]);
     const { register, formState: { errors }, handleSubmit, clearErrors, reset } = useForm();
@@ -35,33 +35,29 @@ export default function ComponentCrudTramites() {
         setSend_datos(false);
         if (e.target.value === "") {
             setConfirmation_search(true);
-            //const result = await axios.get("url"); //Obtener todos los tramites
-            //setList_tramites(result);
         } else {
             if (!(/^([ a-zA-Záéíñóú1-9]{1,60})(\s[a-zA-Z]+)*$/i).test(e.target.value)) {
                 setConfirmation_search(undefined);
-                //setList_tramites([]); //Limpiar
             } else {
-                //const result = await axios.get("url",e.target.value); //Buscar el tramite
-                //setList_tramites(result);
                 setConfirmation_search(false);
             }
         }
         setList_tramites(list_tramites.filter((tramite, index) => index == e.target.value));
     }
     const delete_tramite = () => {
-        //const result = await axios.delete("");
+        setList_tramites(list_tramites.filter((tramite,index) => index !== confirmation_delete));
         setConfirmation_delete(undefined);
-        //const result = await axios.get(""); //Actualizar tramites
-        //setList_tramites(result);
     }
     const edit_tramite = (data) => {
-        //const result = await axios.put("");
-        setConfirmation_edit(undefined);
-        close_form();
-        setSend_datos(true);
-        //const result = await axios.get(""); //Actualizar tramites
-        //setList_tramites(result);
+        if (validate_tables()) {
+            let data_setting = setting_data_tramite(data);
+            let list = list_tramites;
+            list[confirmation_edit] = data_setting;
+            setList_tramites(list);
+            setConfirmation_edit(undefined);
+            close_form();
+            setSend_datos(true);
+        }
     }
     const push_tramite = (data) => {
         if (validate_tables()) {
@@ -70,10 +66,7 @@ export default function ComponentCrudTramites() {
             setConfirmation_edit(null);
             close_form();
             setSend_datos(true);
-            //const result = await axios.push("");
             setList_tramites((prev) => [...prev, data_setting]);
-            //const result = await axios.get(""); //Actualizar tramites
-            //setList_tramites(result);
         }
     }
     const validate_columns_table = () => {
@@ -297,6 +290,14 @@ export default function ComponentCrudTramites() {
         setCapture_options_setting([]);
         setCapture_icon_setting({});
     }
+    const setting_edit_options = (icon, key) => {
+        setIndex_edit_page(key);
+        setView_modal_page(true);
+        setCapture_name_setting(icon.name);
+        setCapture_option_setting("");
+        setCapture_options_setting(icon.options);
+        setCapture_icon_setting({ id: icon.id });
+    }
     const add_icon = () => {
         let validate = false;
         if (capture_icon_setting.id === "1" || capture_icon_setting.id === "2" || capture_icon_setting.id === "4" || capture_icon_setting.id === "5" || capture_icon_setting.id === "6") {
@@ -308,13 +309,21 @@ export default function ComponentCrudTramites() {
 
         if (validate) {
             setView_modal_page(false);
-            if (list_icons_add.find(icon => icon.name === capture_name_setting) === undefined) {
-                setList_icons_add((prev) => [...prev, {
-                    id: capture_icon_setting.id,
-                    name: capture_name_setting,
-                    options: (capture_icon_setting.id === "5") ? [true, false] : capture_options_setting,
-                    table: (capture_icon_setting.id === "3") ? [get_column_table()] : []
-                }]);
+            if (index_edit_page === -1) {
+                if (list_icons_add.find(icon => icon.name === capture_name_setting) === undefined) {
+                    setList_icons_add((prev) => [...prev, {
+                        id: capture_icon_setting.id,
+                        name: capture_name_setting,
+                        options: (capture_icon_setting.id === "5") ? [true, false] : capture_options_setting,
+                        table: (capture_icon_setting.id === "3") ? [get_column_table()] : []
+                    }]);
+                }
+            }
+            if (index_edit_page !== -1) {
+                let list = list_icons_add;
+                list[index_edit_page]['name'] = capture_name_setting;
+                list[index_edit_page]['options'] = capture_options_setting;
+                setList_icons_add(list);
             }
         }
     }
@@ -479,7 +488,6 @@ export default function ComponentCrudTramites() {
         }
     }
     const validation = (id) => {
-        return {};
         switch (id) {
             case "1": return {
                 required: true,
@@ -629,11 +637,18 @@ export default function ComponentCrudTramites() {
                         <label htmlFor={"input-" + icon.name}>
                             {message_page_dynamic(errors, icon)}
                         </label>
-                        <button className="border-0 p-0 bg-transparent" type="button" onClick={() => remove_input(icon.name)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
-                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
-                            </svg>
-                        </button>
+                        <div>
+                            <button className="border-0 p-0 bg-transparent mr-1" type="button" onClick={() => setting_edit_options(icon, key)}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" className="bi bi-pencil text-primary" viewBox="0 0 16 16">
+                                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
+                                </svg>
+                            </button>
+                            <button className="border-0 p-0 bg-transparent" type="button" onClick={() => remove_input(icon.name)}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-x text-danger" viewBox="0 0 16 16">
+                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     {
                         (icon.id === "5") &&
