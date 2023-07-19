@@ -212,7 +212,7 @@ export default function ComponentCrudTramites() {
     }
     const get_setting_id = (prop) => {
         if ((typeof prop) === "object") {
-            if (prop[0] != undefined) {
+            if (prop[0] !== undefined) {
                 return (prop[0] === true) ? "5" : (Object.keys(prop[0])[0].toLowerCase() === "0") ? "7" : "3";
             }
         } else {
@@ -344,7 +344,7 @@ export default function ComponentCrudTramites() {
                 name: capture_option_setting,
                 type: capture_type_setting
             }
-            if (capture_options_setting.filter(prev => prev.name === column.name).length == 0) {
+            if (capture_options_setting.filter(prev => prev.name === column.name).length === 0) {
                 setCapture_options_setting((prev) => [...prev, column])
             }
             setCapture_option_setting("");
@@ -384,8 +384,8 @@ export default function ComponentCrudTramites() {
             setList_icons_add(list);
         }
         if (action === "-") {
-            if (list[key].table.length == 1) {
-                setList_icons_add(list_icons_add.filter(prev => prev != list_icons_add[key]));
+            if (list[key].table.length === 1) {
+                setList_icons_add(list_icons_add.filter(prev => prev !== list_icons_add[key]));
             } else {
                 list[key].table = list[key].table.filter(row => row !== list[key].table[index]);
                 setList_icons_add(list);
@@ -435,7 +435,7 @@ export default function ComponentCrudTramites() {
                         </div>
                         <div className="col border border-primary py-2 px-2">
                             <p className="text-primary font-weight-bold text-center form-control">Tabla</p>
-                            {(capture_options_setting.length != 0) &&
+                            {(capture_options_setting.length !== 0) &&
                                 <table className="table table-bordered table-hover">
                                     <thead className="thead text-white" style={{ backgroundColor: "black" }}>
                                         <tr>
@@ -861,7 +861,7 @@ export default function ComponentCrudTramites() {
                             </div>
                             <div className="form-group mb-3">
                                 <label>Pagina</label>
-                                <div onDrop={(e) => on_drop(e)} droppable="true" onDragOver={(e) => dragging_over(e)} className={(active_style_description) ? "position-relative border border-danger rounded p-3" : "position-relative border border-primary rounded p-3"} style={{ height: (list_icons_add.length == 0 && !view_modal_page) ? "200px" : "auto" }}>
+                                <div onDrop={(e) => on_drop(e)} droppable="true" onDragOver={(e) => dragging_over(e)} className={(active_style_description) ? "position-relative border border-danger rounded p-3" : "position-relative border border-primary rounded p-3"} style={{ height: (list_icons_add.length === 0 && !view_modal_page) ? "200px" : "auto" }}>
                                     {
                                         view_modal_page &&
                                         <div className="border border-primary rounded p-2 w-100 mb-3">
@@ -891,7 +891,7 @@ export default function ComponentCrudTramites() {
                                             </div>
                                         </div>
                                     }
-                                    {(!view_modal_page && list_icons_add.length == 0) && <div className="w-100 text-center text-secondary" style={message_dragdrop()}>Arrastrar y soltar</div>}
+                                    {(!view_modal_page && list_icons_add.length === 0) && <div className="w-100 text-center text-secondary" style={message_dragdrop()}>Arrastrar y soltar</div>}
                                     {
                                         list_icons_add.map((icon, index) => {
                                             return <div key={index} className="mb-3">{search_icon(icon, index)}</div>
