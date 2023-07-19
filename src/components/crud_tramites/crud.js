@@ -2,7 +2,6 @@ import { useState, Fragment, useReducer } from "react";
 import { useMediaQuery } from "react-responsive"
 import { useForm } from 'react-hook-form';
 
-//VALIDAR QUE LOS PASSWORD TENGAN NUMEROS Y LETRAS PARA EVITAR ERRORES AL MOMENTO DE LA EDICION
 //VALIDA FLUJO INNECESARIO DEL CODIGO AGREGANDO CONTINUE BREAK RETURN
 
 export default function ComponentCrudTramites() {
@@ -12,6 +11,7 @@ export default function ComponentCrudTramites() {
     const [send_datos, setSend_datos] = useState(false);
     const [view_modal_form, setView_modal_form] = useState(false);
     const [view_modal_page, setView_modal_page] = useState(false);
+    const [view_password, setView_password] = useState(false);
     const [active_style_description, setActive_style_description] = useState(false);
     const [confirmation_edit, setConfirmation_edit] = useState(null);
     const [confirmation_delete, setConfirmation_delete] = useState(null);
@@ -152,6 +152,7 @@ export default function ComponentCrudTramites() {
         setView_modal_page(false);
         setConfirmation_edit(null);
         setView_modal_form(true);
+        setView_password(false);
         setCapture_options_setting([]);
         reset_form();
     }
@@ -175,6 +176,7 @@ export default function ComponentCrudTramites() {
         reset(setting_values_page(schema, list_tramites[index].descripcion.page));
         setConfirmation_edit(index);
         setView_modal_form(true);
+        setView_password(false);
     }
     const capitalize_letter = (cadena) => {
         return cadena.charAt(0).toUpperCase() + cadena.slice(1);
@@ -219,10 +221,16 @@ export default function ComponentCrudTramites() {
                 return (prop[0] === true) ? "5" : (Object.keys(prop[0])[0].toLowerCase() === "0") ? "7" : "3";
             }
         } else {
-            if (/^([ a-zA-Záéñíóú]+)(\s[a-zA-Z])*$/i.test(prop)) return "1";
+            if (prop[prop.length - 2] === " ") {
+                let validation = (prop[prop.length - 1] === "1" || prop[prop.length - 1] === "2" || prop[prop.length - 1] === "3") ? false : !/^([ a-zA-Záéíóñú]+)(\s[a-zA-Z])*$/i.test(prop);
+                if (!validation) {
+                    return "1";
+                }
+            }
+            if (/^([ a-zA-Záéíóñú]+)(\s[a-zA-Z])*$/i.test(prop)) return "1";
             if (/^\d*$/i.test(prop)) return "2";
             if (/^\d*$/i.test(prop.split("-")[0])) return "4";
-            if (/^([ a-zA-Záéñíóú0-9]+)(\s[0-9a-zA-Z])*$/i.test(prop)) return "6";
+            if (/(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{5,}/i.test(prop)) return "6";
         }
     }
     const reset_form = () => {
@@ -498,12 +506,16 @@ export default function ComponentCrudTramites() {
                 required: true,
                 maxLength: 140,
                 pattern: /^([ a-zA-Záéíóú]+)(\s[a-zA-Z]+)*$/i
-            };
+            }
             case "2": return {
                 required: true,
                 min: 0,
                 pattern: /^\d*$/i
-            };
+            }
+            case "6": return {
+                required: true,
+                pattern: /(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{5,}/i
+            }
             case "title": return {
                 required: true,
                 minLength: 5,
@@ -529,7 +541,11 @@ export default function ComponentCrudTramites() {
     const validate_date_table = (row) => {
         let validation = false;
         if (row.type === "text") {
-            validation = !/^([ a-zA-Záéíóñú]+)(\s[a-zA-Z])*$/i.test(row.value);
+            if (row.value[row.value.length - 2] === " ") {
+                validation = (row.value[row.value.length - 1] === "1" || row.value[row.value.length - 1] === "2" || row.value[row.value.length - 1] === "3") ? false : !/^([ a-zA-Záéíóñú]+)(\s[a-zA-Z])*$/i.test(row.value);
+            } else {
+                validation = !/^([ a-zA-Záéíóñú]+)(\s[a-zA-Z])*$/i.test(row.value);
+            }
         }
         if (row.type === "number") {
             validation = !/^\d*$/i.test(row.value);
@@ -552,7 +568,7 @@ export default function ComponentCrudTramites() {
             {
                 (errors[icon.name]?.type === "required") ? "El campo " + icon.name.toLowerCase() + " es requerido" :
                     (errors[icon.name]?.type === "min") ? "El campo " + icon.name.toLowerCase() + " debe tener un minimo 0" :
-                        (errors[icon.name]?.type === "pattern") ? "El campo " + icon.name.toLowerCase() + " solo permite letras" :
+                        (errors[icon.name]?.type === "pattern") ? (icon.id === "6") ? "La contraseña debe tener al menos un numero una letra y longitud minima de 5 caracteres" : "El campo " + icon.name.toLowerCase() + " solo permite letras" :
                             (errors[icon.name]?.type === "maxLength") ? "El campo" + icon.name.toLowerCase() + " debe tener menos de 140 caracteres" : (icon.id === "5") ? "¿" + icon.name + "?" : icon.name
             }
         </span>
@@ -575,11 +591,17 @@ export default function ComponentCrudTramites() {
                         </button>
                     </div>
                     <input
-                        type={(icon.id === "1") ? "text" : (icon.id === "2" ? "number" : (icon.id === "4") ? "date" : "password")}
+                        type={(icon.id === "1") ? "text" : (icon.id === "2" ? "number" : (icon.id === "4") ? "date" : (view_password) ? "text" : "password")}
                         className={style_page_dynamic(errors, icon.name)} id={"input-" + icon.name}
                         placeholder={icon.name + "..."}
                         {...register(icon.name, validation(icon.id))}
                     />
+                    {
+                        icon.id === "6" && <div className="d-flex align-items-center">
+                            <input id="view-password" type="checkbox" checked={view_password} onChange={() => setView_password(!view_password)} style={{ marginLeft: "3px", width: "16px", height: "16px" }} />
+                            <label htmlFor="view-password" className="ml-2 mt-2">Mostrar contraseña</label>
+                        </div>
+                    }
                 </>
             case "3":
                 return <>
