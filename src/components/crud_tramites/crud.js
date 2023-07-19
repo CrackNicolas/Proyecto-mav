@@ -2,8 +2,6 @@ import { useState, Fragment, useReducer } from "react";
 import { useMediaQuery } from "react-responsive"
 import { useForm } from 'react-hook-form';
 
-//VALIDA FLUJO INNECESARIO DEL CODIGO AGREGANDO CONTINUE BREAK RETURN
-
 export default function ComponentCrudTramites() {
     const isTablet = useMediaQuery({ query: '(max-width: 991px)' })
     const isMobile = useMediaQuery({ query: "(max-width: 675px)" });
@@ -42,7 +40,7 @@ export default function ComponentCrudTramites() {
                 setConfirmation_search(false);
             }
         }
-        setList_tramites(list_tramites.filter((tramite, index) => index == e.target.value));
+        setList_tramites(list_tramites.filter((tramite, index) => index === e.target.value));
     }
     const delete_tramite = () => {
         setList_tramites(list_tramites.filter((tramite, index) => index !== confirmation_delete));
@@ -50,9 +48,8 @@ export default function ComponentCrudTramites() {
     }
     const edit_tramite = (data) => {
         if (validate_tables()) {
-            let data_setting = setting_data_tramite(data);
             let list = list_tramites;
-            list[confirmation_edit] = data_setting;
+            list[confirmation_edit] = setting_data_tramite(data);
             setList_tramites(list);
             setConfirmation_edit(undefined);
             setList_icons_add([]);
@@ -62,17 +59,15 @@ export default function ComponentCrudTramites() {
     }
     const push_tramite = (data) => {
         if (validate_tables()) {
-            let data_setting = setting_data_tramite(data);
-
             setConfirmation_edit(null);
             close_form();
             setSend_datos(true);
-            setList_tramites((prev) => [...prev, data_setting]);
+            setList_tramites((prev) => [...prev, setting_data_tramite(data)]);
         }
     }
     const validate_columns_table = () => {
         let validation = !/^([ a-zA-Záñéíóú]+)(\s[a-zA-Z])*$/i.test(capture_option_setting);
-        return (capture_type_setting == "" || validation);
+        return (capture_type_setting === "" || validation);
     }
     const validate_tables = () => {
         let indexs = [];
@@ -104,7 +99,7 @@ export default function ComponentCrudTramites() {
         let setting_data = {}, setting_page = {};
 
         list_icons_add.map(element => {
-            if (element.table.length != 0) {
+            if (element.table.length !== 0) {
                 let schema_table = [];
                 element.table.map(row => {
                     let schema = {};
@@ -120,7 +115,7 @@ export default function ComponentCrudTramites() {
         });
 
         Object.keys(data).map(key => {
-            if (key != "titulo" && key != "proyecto" && key != "indicador" && key != "agente" && key != "dias" && key != "aux" && key != "categoria_id_categoria" && key != "tipo_usuario_tipo" && key != "especialidad_id_especialidad") {
+            if (key !== "titulo" && key !== "proyecto" && key !== "indicador" && key !== "agente" && key !== "dias" && key !== "aux" && key !== "categoria_id_categoria" && key !== "tipo_usuario_tipo" && key !== "especialidad_id_especialidad") {
                 if (typeof data[key] !== "object") {
                     setting_page[key.toLowerCase()] = data[key]
                 }
@@ -223,9 +218,7 @@ export default function ComponentCrudTramites() {
         } else {
             if (prop[prop.length - 2] === " ") {
                 let validation = (prop[prop.length - 1] === "1" || prop[prop.length - 1] === "2" || prop[prop.length - 1] === "3") ? false : !/^([ a-zA-Záéíóñú]+)(\s[a-zA-Z])*$/i.test(prop);
-                if (!validation) {
-                    return "1";
-                }
+                if (!validation) return "1";
             }
             if (/^([ a-zA-Záéíóñú]+)(\s[a-zA-Z])*$/i.test(prop)) return "1";
             if (/^\d*$/i.test(prop)) return "2";
@@ -285,12 +278,11 @@ export default function ComponentCrudTramites() {
         setView_modal_page(true);
         reset_setting();
         setActive_style_description(false);
-        const id = e.dataTransfer.getData("item_id");
-        setCapture_icon_setting({ id });
+        setCapture_icon_setting({ id: e.dataTransfer.getData("item_id") });
     }
     const remove_input = (name) => {
         unregister(name);
-        setList_icons_add(list_icons_add.filter(icon => icon.name != name && icon.id != undefined));
+        setList_icons_add(list_icons_add.filter(icon => icon.name !== name && icon.id !== undefined));
     }
     const remove_icon = () => {
         setView_modal_page(false);
@@ -352,7 +344,7 @@ export default function ComponentCrudTramites() {
                 name: capture_option_setting,
                 type: capture_type_setting
             }
-            if (capture_options_setting.filter(prev => prev.name == column.name).length == 0) {
+            if (capture_options_setting.filter(prev => prev.name === column.name).length == 0) {
                 setCapture_options_setting((prev) => [...prev, column])
             }
             setCapture_option_setting("");
@@ -360,10 +352,10 @@ export default function ComponentCrudTramites() {
         }
     }
     const remove_column = (name) => {
-        setCapture_options_setting(capture_options_setting.filter(prev => prev.name != name));
+        setCapture_options_setting(capture_options_setting.filter(prev => prev.name !== name));
     }
     const remove_option = (option) => {
-        setCapture_options_setting(capture_options_setting.filter(prev => prev != option));
+        setCapture_options_setting(capture_options_setting.filter(prev => prev !== option));
     }
     const get_column_table = () => {
         let column = {};
@@ -382,7 +374,7 @@ export default function ComponentCrudTramites() {
                 value: "",
                 type: Object.values(list_icons_add[key].table[0])[index]?.type
             }
-        });
+        })
         return column;
     }
     const rows_table = (key, index, action) => {
@@ -405,10 +397,13 @@ export default function ComponentCrudTramites() {
         row[key].value = e.target.value
         forceUpdate();
     }
+    const message_setting = (id) => {
+        return (id === "1")? "texto" : (id === "2")? "numero" : (id === "3")? "tabla" : (id === "4")? "fecha" : (id === "5")? "bool" : (id === "6")? "key" : "seleccionable";
+    }
     const message_inputs_setting = () => {
         let validation = !/^([ a-zA-Záéíóú]+)(\s[a-zA-Z])*$/i.test(capture_name_setting);
-        return (validation && capture_name_setting != "") ?
-            <label style={validation ? { color: "red" } : {}} htmlFor="input-name" className="w-100 pl-1">
+        return (validation && capture_name_setting !== "") ?
+            <label style={validation && { color: "red" }} htmlFor="input-name" className="w-100 pl-1">
                 Solo se permiten letras
             </label>
             :
@@ -417,7 +412,7 @@ export default function ComponentCrudTramites() {
     const search_setting = (icon) => {
         switch (icon.id) {
             case "3":
-                return <>
+                return <Fragment>
                     <div className="pt-3">
                         <span className={(capture_options_setting.length > 0) ? "text-primary font-weight-bold pl-1" : "text-danger font-weight-bold pl-1"}>
                             {
@@ -464,9 +459,9 @@ export default function ComponentCrudTramites() {
                             }
                         </div>
                     </div>
-                </>
+                </Fragment>
             case "7":
-                return <>
+                return <Fragment>
                     <div className="pt-3">
                         <span className={(capture_options_setting.length > 1) ? "text-primary font-weight-bold pl-1" : "text-danger font-weight-bold pl-1"}>
                             {
@@ -497,7 +492,7 @@ export default function ComponentCrudTramites() {
                             }
                         </div>
                     </div>
-                </>
+                </Fragment>
         }
     }
     const validation = (id) => {
@@ -532,9 +527,7 @@ export default function ComponentCrudTramites() {
     }
     const message_table = (name, key) => {
         for (let prev of capture_index_tables) {
-            if (prev.index === key) {
-                return (prev.error === "required") ? "Los datos de la tabla " + name.toLowerCase() + " son requeridos" : "Los datos de la tabla " + name.toLowerCase() + " son invalidos";
-            }
+            if (prev.index === key) return (prev.error === "required") ? "Los datos de la tabla " + name.toLowerCase() + " son requeridos" : "Los datos de la tabla " + name.toLowerCase() + " son invalidos";
         }
         return name;
     }
@@ -550,18 +543,16 @@ export default function ComponentCrudTramites() {
         if (row.type === "number") {
             validation = !/^\d*$/i.test(row.value);
         }
-        return validation && row.value != "";
+        return validation && row.value !== "";
     }
     const message_inputs_table = (row) => {
         let validation = validate_date_table(row);
-        return (validation) ?
-            <span style={validation ? { color: "red" } : {}}>
+        return (validation) &&
+            <span style={validation && { color: "red" }}>
                 {
                     (row.type === "text") ? "Solo se permiten letras" : "Solo se permiten numeros"
                 }
             </span>
-            :
-            undefined
     }
     const message_page_dynamic = (errors, icon) => {
         return <span style={(errors[icon.name]?.type !== "required" && errors[icon.name]?.type !== "maxLength" && errors[icon.name]?.type !== "min" && errors[icon.name]?.type !== "pattern") ? {} : { color: "red" }}>
@@ -579,7 +570,7 @@ export default function ComponentCrudTramites() {
     const search_icon = (icon, key) => {
         switch (icon.id) {
             case "1": case "2": case "4": case "6":
-                return <>
+                return <Fragment>
                     <div className="d-flex justify-content-between">
                         <label htmlFor={"input-" + icon.name}>
                             {message_page_dynamic(errors, icon)}
@@ -602,9 +593,9 @@ export default function ComponentCrudTramites() {
                             <label htmlFor="view-password" className="ml-2 mt-2">Mostrar contraseña</label>
                         </div>
                     }
-                </>
+                </Fragment>
             case "3":
-                return <>
+                return <Fragment>
                     <div className="d-flex justify-content-between">
                         <label htmlFor={"input-" + icon.name} style={(icon.name === message_table(icon.name, key)) ? {} : { color: "red" }}>
                             {message_table(icon.name, key)}
@@ -657,9 +648,9 @@ export default function ComponentCrudTramites() {
                             }
                         </tbody>
                     </table>
-                </>
+                </Fragment>
             case "5": case "7":
-                return <>
+                return <Fragment>
                     <div className="d-flex justify-content-between">
                         <label htmlFor={"input-" + icon.name}>
                             {message_page_dynamic(errors, icon)}
@@ -694,7 +685,7 @@ export default function ComponentCrudTramites() {
                             }
                         </select>
                     }
-                </>
+                </Fragment>
         }
     }
 
@@ -720,7 +711,7 @@ export default function ComponentCrudTramites() {
             icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-lightbulb" viewBox="0 0 16 16"><path d="M2 6a6 6 0 1 1 10.174 4.31c-.203.196-.359.4-.453.619l-.762 1.769A.5.5 0 0 1 10.5 13a.5.5 0 0 1 0 1 .5.5 0 0 1 0 1l-.224.447a1 1 0 0 1-.894.553H6.618a1 1 0 0 1-.894-.553L5.5 15a.5.5 0 0 1 0-1 .5.5 0 0 1 0-1 .5.5 0 0 1-.46-.302l-.761-1.77a1.964 1.964 0 0 0-.453-.618A5.984 5.984 0 0 1 2 6zm6-5a5 5 0 0 0-3.479 8.592c.263.254.514.564.676.941L5.83 12h4.342l.632-1.467c.162-.377.413-.687.676-.941A5 5 0 0 0 8 1z" /></svg>
         },
         {
-            name: "Pass",
+            name: "Key",
             icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-key" viewBox="0 0 16 16"><path d="M0 8a4 4 0 0 1 7.465-2H14a.5.5 0 0 1 .354.146l1.5 1.5a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0L13 9.207l-.646.647a.5.5 0 0 1-.708 0L11 9.207l-.646.647a.5.5 0 0 1-.708 0L9 9.207l-.646.647A.5.5 0 0 1 8 10h-.535A4 4 0 0 1 0 8zm4-3a3 3 0 1 0 2.712 4.285A.5.5 0 0 1 7.163 9h.63l.853-.854a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.793-.793-1-1h-6.63a.5.5 0 0 1-.451-.285A3 3 0 0 0 4 5z" /><path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" /></svg>
         },
         {
@@ -874,7 +865,9 @@ export default function ComponentCrudTramites() {
                                     {
                                         view_modal_page &&
                                         <div className="border border-primary rounded p-2 w-100 mb-3">
-                                            <label className="text-primary font-weight-bold w-100 text-center">Configuracion</label>
+                                            <label className="text-primary font-weight-bold w-100 text-center">
+                                                {"Configurando "+message_setting(capture_icon_setting.id)}
+                                            </label>
                                             <div className="pb-3 pt-1">
                                                 {message_inputs_setting(capture_icon_setting)}
                                                 <input type="text" id="input-name" className={(message_inputs_setting() === null) ? "form-control shadow-none border-primary" : "form-control shadow-none border-danger"} onChange={(e) => setCapture_name_setting(e.target.value)} value={capture_name_setting} placeholder="Nombre..." />
@@ -911,24 +904,24 @@ export default function ComponentCrudTramites() {
                             </label>
                             <select className={style_inputs(errors.categoria_id_categoria)} {...register('categoria_id_categoria', validation("default"))}>
                                 <option value="">Seleccionar categoria...</option>
-                                <option value="Name 1">Name 1</option>
-                                <option value="Name 2">Name 2</option>
+                                <option value="Categoria 1">Categoria 1</option>
+                                <option value="Categoria 2">Categoria 2</option>
                             </select>
                             <label className="mt-3">
                                 {message_dropdown(errors.tipo_usuario_tipo, "Tipo de usuario")}
                             </label>
                             <select className={style_inputs(errors.tipo_usuario_tipo)} {...register('tipo_usuario_tipo', validation("default"))}>
                                 <option value="">Seleccionar tipo usuario...</option>
-                                <option value="Name 1">Name 1</option>
-                                <option value="Name 2">Name 2</option>
+                                <option value="Tipo de usuario 1">Tipo de usuario 1</option>
+                                <option value="Tipo de usuario 2">Tipo de usuario 2</option>
                             </select>
                             <label className="mt-3">
                                 {message_dropdown(errors.especialidad_id_especialidad, "Especialidad")}
                             </label>
                             <select className={style_inputs(errors.especialidad_id_especialidad)} {...register('especialidad_id_especialidad', validation("default"))}>
                                 <option value="">Seleccionar especialidad...</option>
-                                <option value="Name 1">Name 1</option>
-                                <option value="Name 2">Name 2</option>
+                                <option value="Especialidad 1">Especialidad 1</option>
+                                <option value="Especialidad 2">Especialidad 2</option>
                             </select>
                             <div className={(isMobile) ? "row px-3 pt-4" : "row px-3 pt-5"}>
                                 <button onClick={() => close_form()} type="button" className={(isMobile) ? "mr-1 col btn btn-danger d-flex justify-content-center align-items-center" : "mr-5 col btn btn-danger d-flex justify-content-center align-items-center"}>
